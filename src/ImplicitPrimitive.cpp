@@ -65,4 +65,9 @@ glm::vec3 Primitive::GetStartVertex()
 	return Project(glm::vec3(0, 0, 0));
 }
 
+glm::vec3 Primitive::GetCenterVertex()
+{
+	return glm::vec3(0, 0, 0);
+}
+
 

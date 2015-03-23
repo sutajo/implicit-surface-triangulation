@@ -1,3 +1,11 @@
+/*
+ * ImplicitOperator
+ *
+ * File: 	ImplicitOperator.hpp
+ * Author:	Evan Wilde		<etcwilde@uvic.ca>
+ * Date:	Mar 23 2015
+ */
+
 #ifndef IMPLICIT_OPERATOR_HPP
 #define IMPLICIT_OPERATOR_HPP
 
@@ -28,6 +36,7 @@ namespace Implicit
 		virtual float Evaluate(glm::vec3 point)=0;
 		virtual float FieldValue(glm::vec3 point)=0;
 		virtual glm::vec3 Normal(glm::vec3 point)=0;
+		virtual glm::vec3 GetCenterVertex();
 	protected:
 		Object* m_left_child;
 		Object* m_right_child;

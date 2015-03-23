@@ -115,8 +115,24 @@ namespace Implicit
 		 */
 		virtual float FieldValue(const glm::vec3& point);
 
+		/**
+		 * \brief returns a vertex on the surface
+		 *
+		 * Note: Test the field value to ensure that it is on the
+		 * surface. This uses a numerical method to determine where the
+		 * surface is, it may not actually be the surface!
+		 *
+		 * \return vertex
+		 */
 		virtual glm::vec3 GetStartVertex();
 
+		/**
+		 * \brief returns the center vertex
+		 *
+		 * This will return (0, 0, 0) for all instances of
+		 * Implicit::Primitive.
+		 */
+		virtual glm::vec3 GetCenterVertex();
 
 		virtual glm::vec3 Normal(const glm::vec3& point);
 	protected:

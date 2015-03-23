@@ -101,6 +101,11 @@ namespace Implicit
 		virtual glm::vec3 GetStartVertex()=0;
 
 		/**
+		 * \brief Get the center vertex of the object
+		 */
+		virtual glm::vec3 GetCenterVertex()=0;
+
+		/**
 		 * \brief Get Curvature of surface at a point
 		 *
 		 * Calculates the principle curvatures k1 k2

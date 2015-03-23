@@ -13,6 +13,14 @@
 int main()
 {
 	Implicit::Primitive p(geoffFunction);
-	std::cout << p.GetStartVertex() << '\n';
+	Implicit::Translate pt(&p, 1, 0, 10);
+	std::cout << "P: " << '\n';
+	std::cout << "Start: " << p.GetStartVertex() << '\n';
+	std::cout << "Normal: " << p.Normal(p.GetStartVertex()) << '\n';
+	std::cout << "Center: " << p.GetCenterVertex() << '\n';
+	std::cout << "Start: " << pt.GetStartVertex() << '\n';
+	std::cout << "Normal: " << pt.Normal(pt.GetStartVertex()) << '\n';
+	std::cout << "Center: " << pt.GetCenterVertex() << '\n';
+
 	return 0;
 }

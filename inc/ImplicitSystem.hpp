@@ -32,5 +32,6 @@ namespace Implicit {};
 
 
 #include "ImplicitTransform.hpp"
+#include "ImplicitTranslate.hpp"
 
 #endif //IMPLICIT_SYSTEM_HPP

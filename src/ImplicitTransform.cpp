@@ -19,6 +19,10 @@ Transform::Transform(Object* obj, const glm::mat4& m) :
 	setWorldMatrix(m);
 }
 
+Transform::Transform(Object* obj) :
+	m_child(obj)
+{ }
+
 float Transform::Evaluate(const glm::vec3& point)
 {
 	return m_child->Evaluate(map_to(point));
@@ -31,7 +35,11 @@ float Transform::FieldValue(const glm::vec3& point)
 
 glm::vec3 Transform::Normal(const glm::vec3& point)
 {
-	return map_from(m_child->Normal(map_to(point)));
+	return glm::normalize(
+			glm::vec3(m_normal_conversion *
+				glm::vec4(m_child->Normal(map_to(point)), 1.f)
+				)
+			);
 }
 
 glm::vec3 Transform::GetStartVertex()
@@ -39,18 +47,24 @@ glm::vec3 Transform::GetStartVertex()
 	return (map_from(m_child->GetStartVertex()));
 }
 
-glm::vec3 Transform::map_to(glm::vec3 v)
+glm::vec3 Transform::GetCenterVertex()
 {
-	return glm::vec3(glm::vec4(v, 1.f) * m_to_local);
-}
-
-glm::vec3 Transform::map_from(glm::vec3 v)
-{
-	return glm::vec3(glm::vec4(v, 1.f) * m_from_local);
+	return (map_from(m_child->GetCenterVertex()));
 }
 
 void Transform::setWorldMatrix(const glm::mat4& m)
 {
-	m_from_local = glm::inverseTranspose(m);
-	m_to_local = m;
+	m_from_local = m;
+	m_to_local = glm::inverse(m);
+	m_normal_conversion = glm::inverseTranspose(m);
+}
+
+glm::vec3 Transform::map_to(glm::vec3 v)
+{
+	return glm::vec3(m_to_local * glm::vec4(v, 1.f));
+}
+
+glm::vec3 Transform::map_from(glm::vec3 v)
+{
+	return glm::vec3(m_from_local * glm::vec4(v, 1.f));
 }
