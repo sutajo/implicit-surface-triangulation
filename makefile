@@ -20,13 +20,15 @@
 
 
 
-EXEC 	= implicit
+# EXEC 	= implicit
+LIBRARY	= Implicit
 
 # Commands
 RM	= rm -f
 RMD	= $(RM) -r
 CC	= gcc
 CXX	= g++
+AR	= ar
 TAR	= tar
 MKDIR	= mkdir -p
 CP	= cp
@@ -75,7 +77,7 @@ TEST_OBJS	= \
 
 .PHONY:	all release debug test clean rebuild docs
 # No optimizations
-all: $(D_BIN)$(EXEC)
+all: $(D_BIN)$(LIBRARY)
 
 # Optimizations
 release: CFLAGS += -O3
@@ -92,7 +94,7 @@ test: clean  $(TEST_OBJS) all
 
 clean:
 	$(RM) $(D_BUILD)*.o
-	$(RM) $(D_BIN)$(EXEC)
+	$(RM) $(D_BIN)$(LIBRARY)
 	$(RMD) $(D_DOCS)html
 
 rebuild: clean all
@@ -149,6 +151,11 @@ $(D_BUILD)%.o : $(D_TEST)%.cpp
 $(D_BUILD)%.o : $(D_TEST)%.C
 	$(CXX) $(CXFLAGS) $< -o $@
 
+# Build library
+$(D_BIN)$(LIBRARY): $(D_BIN) $(D_BUILD) $(OBJS)
+	$(AR) rvs $(D_BIN)lib$(LIBRARY).a $(OBJS)
+
+
 # Link Objects
-$(D_BIN)$(EXEC): $(D_BIN) $(D_BUILD) $(OBJS)
-	$(CXX) -o $(D_BIN)$(EXEC) $(OBJS) $(LIBS)
+# $(D_BIN)$(EXEC): $(D_BIN) $(D_BUILD) $(OBJS)
+# 	$(CXX) -o $(D_BIN)$(EXEC) $(OBJS) $(LIBS)
