@@ -9,7 +9,7 @@
 #ifndef IMPLICIT_BLEND_HPP
 #define IMPLICIT_BLEND_HPP
 
-#include "ImplicitObject.hpp"
+#include "ImplicitOperator.hpp"
 
 #ifdef DEBUG
 #include <iostream>
@@ -20,35 +20,24 @@ namespace Implicit
 	/**
 	 * \brief Blends multiple primitive objects into one blobject
 	 */
-	class Blend : public Object
+	class Blend : public Operator
 	{
 	public:
 		/**
-		 * \brief Create a blend object
-		 * Uses default iso value of 0.5
+		 * \brief Construct a Blend Object
+		 * Averages the iso values of the two objects
 		 */
-		Blend();
-
+		Blend(Object* left, Object* right);
 		/**
-		 * \brief Create a blend object with defined iso value
-		 *
-		 * \param iso The value where the surface is defined
+		 * \brief Constructs a Blend Object
 		 */
-		Blend(float iso);
-
-		/**
-		 * \brief Create a blend object with defined iso value
-		 *
-		 * \param iso The value where the surface is defined
-		 * \param center The center of the blend object
-		 */
-		Blend(float iso, glm::vec3 center);
+		Blend(Object* left, Object* right, float iso);
 
 
-		virtual float Evaluate(glm::vec3 point);
-		virtual float FieldValue(glm::vec3 point);
+		virtual float Evaluate(const glm::vec3& point);
+		virtual float FieldValue(const glm::vec3& point);
 
-		virtual glm::vec3 Normal(glm::vec3 point);
+		virtual glm::vec3 Normal(const glm::vec3& point);
 	protected:
 
 	private:

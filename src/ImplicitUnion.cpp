@@ -10,12 +10,12 @@
 
 using namespace Implicit;
 
-Union::Union() :
-	Object()
+Union::Union(Object* left, Object* right) :
+	Operator(left, right)
 { }
 
-Union::Union(float iso) :
-	Object(iso)
+Union::Union(Object* left, Object* right, float iso) :
+	Operator(left, right, iso)
 { }
 
 float Union::Evaluate(glm::vec3 point)
@@ -25,19 +25,19 @@ float Union::Evaluate(glm::vec3 point)
 
 float Union::FieldValue(glm::vec3 point)
 {
-	return std::max(m_left_object->FieldValue(point),
-			m_right_object->FieldValue(point));
+	return std::max(m_left_child->FieldValue(point),
+			m_right_child->FieldValue(point));
 }
 
 glm::vec3 Union::Normal(glm::vec3 point)
 {
-	float left_field_value = m_left_object->FieldValue(point);
-	float right_field_value = m_right_object->FieldValue(point);
+	float left_field_value = m_left_child->FieldValue(point);
+	float right_field_value = m_right_child->FieldValue(point);
 	float total_field_value = left_field_value + right_field_value;
 
 	float left_contrib = left_field_value / total_field_value;
 	float right_contrib = right_field_value / total_field_value;
 
-	return glm::normalize(m_left_object->Normal(point) * left_contrib +
-		m_right_object->Normal(point) * right_contrib);
+	return glm::normalize(m_left_child->Normal(point) * left_contrib +
+		m_right_child->Normal(point) * right_contrib);
 }

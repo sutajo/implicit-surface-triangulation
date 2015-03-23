@@ -11,15 +11,11 @@
 using namespace Implicit;
 
 Object::Object():
-	m_iso(0.5f),
-	m_right_object(NULL),
-	m_left_object(NULL)
+	m_iso(0.5f)
 { }
 
 Object::Object(float iso) :
-	m_iso(iso),
-	m_right_object(NULL),
-	m_left_object(NULL)
+	m_iso(iso)
 { }
 
 
@@ -28,34 +24,15 @@ void Object::SetIso(float iso)
 	m_iso = iso;
 }
 
-void Object::SetRightObject(Object* obj)
+float Object::GetIso()
 {
-	m_right_object = obj;
-}
-void Object::SetLeftObject(Object* obj)
-{
-	m_left_object = obj;
-}
-
-Object*  Object::GetRightObject()
-{
-	return m_right_object;
-}
-
-Object* Object::GetLeftObject()
-{
-	return m_left_object;
+	return m_iso;
 }
 
 
 glm::vec3 Object::Project(glm::vec3 p)
 {
 	return project(p);
-}
-
-glm::vec3 Object::GetStartVertex()
-{
-	return Project(glm::vec3(0, 0, 0));
 }
 
 void Object::Curvature(const glm::vec3& pt, float& k1, float& k2)

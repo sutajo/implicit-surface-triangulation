@@ -83,14 +83,6 @@ namespace Implicit
 				float radius);
 
 		/**
-		 * \brief Changes the radius of the object
-		 *
-		 * \param radius The maximum distance where the field function
-		 * is not 0
-		 */
-		void SetRadius(float radius);
-
-		/**
 		 * \brief Evaluates the field function at a distance
 		 *
 		 * Will return a value between 0 and 1
@@ -114,18 +106,19 @@ namespace Implicit
 		 *
 		 * \param point The point to evaluate
 		 */
-		virtual float Evaluate(glm::vec3 point);
+		virtual float Evaluate(const glm::vec3& point);
 
 		/**
 		 * \brief Evaluate the field function at a given point
 		 *
 		 * \param point The point to evaluate
 		 */
-		virtual float FieldValue(glm::vec3 point);
+		virtual float FieldValue(const glm::vec3& point);
 
-		glm::vec3 StartPoint();
+		virtual glm::vec3 GetStartVertex();
 
-		virtual glm::vec3 Normal(glm::vec3 point);
+
+		virtual glm::vec3 Normal(const glm::vec3& point);
 	protected:
 
 		/**
@@ -134,7 +127,7 @@ namespace Implicit
 		 * \param pt The point to get the distance of
 		 * \return The distance from the center to the point
 		 */
-		float getDistance(glm::vec3 pt);
+		float getDistance(const glm::vec3& pt);
 
 		/**
 		 * \brief Field falloff function of the primitive blob

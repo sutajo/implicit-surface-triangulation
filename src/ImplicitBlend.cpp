@@ -10,53 +10,36 @@
 
 using namespace Implicit;
 
-Blend::Blend() :
-	Object()
+Blend::Blend(Object* left, Object* right) :
+	Operator(left, right)
 { }
 
-Blend::Blend(float iso) :
-	Object(iso)
+Blend::Blend(Object* left, Object* right, float iso) :
+	Operator(left, right, iso)
 { }
 
-float Blend::Evaluate(glm::vec3 point)
+float Blend::Evaluate(const glm::vec3& point)
 {
 	return FieldValue(point) - m_iso;
 }
 
-float Blend::FieldValue(glm::vec3 point)
+float Blend::FieldValue(const glm::vec3& point)
 {
-	float left_fvalue = 0;
-	float right_fvalue = 0;
-	if (m_left_object) left_fvalue = m_left_object->FieldValue(point);
-	if (m_right_object) right_fvalue = m_right_object->FieldValue(point);
-	return left_fvalue + right_fvalue;
+	return m_left_child->FieldValue(point) + m_right_child->FieldValue(point);
 }
 
-glm::vec3 Blend::Normal(glm::vec3 point)
+glm::vec3 Blend::Normal(const glm::vec3& point)
 {
+	float left_fv;
+	float right_fv;
+	float total_fv;
 
-	float left_field_value;
-	float right_field_value;
-	float total_field_value;
-	glm::vec3 left_normal;
-	glm::vec3 right_normal;
+	left_fv = m_left_child->FieldValue(point);
+	right_fv = m_right_child->FieldValue(point);
+	const glm::vec3& left_normal = m_left_child->Normal(point);
+	const glm::vec3& right_normal = m_right_child->Normal(point);
+	total_fv = left_fv + right_fv;
 
-	if (m_left_object)
-	{
-		left_field_value = m_left_object->FieldValue(point);
-		left_normal = m_left_object->Normal(point);
-	}
-	if (m_right_object)
-	{
-		right_field_value->m_right_object->FieldValue(point);
-		right_normal = m_right_object->Normal(point);
-	}
-	total_field_value = left_field_value + right_field_value;
-
-	float left_contrib = left_field_value / total_field_value;
-	float right_contrib = right_field_value / total_field_value;
-
-	return glm::normalize(right_normal * right_contrib +
-			left_normal * left_contrib);
-
+	return glm::normalize(left_normal * (left_fv/total_fv) +
+			right_normal * (right_fv/total_fv));
 }

@@ -21,9 +21,16 @@ namespace Implicit {};
 
 #include "fieldFunctions.hpp"
 
-#include "ImplicitObject.hpp"
+
 #include "ImplicitPrimitive.hpp"
-#include "ImplicitBlend.hpp"
+
+#include "ImplicitObject.hpp"
+
+#include "ImplicitOperator.hpp"
 #include "ImplicitUnion.hpp"
+#include "ImplicitBlend.hpp"
+
+
+#include "ImplicitTransform.hpp"
 
 #endif //IMPLICIT_SYSTEM_HPP

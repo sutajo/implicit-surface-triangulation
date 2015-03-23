@@ -10,20 +10,24 @@
 #define IMPLICIT_UNION_HPP
 #include <algorithm>
 
-#include "ImplicitObject.hpp"
+#include "ImplicitOperator.hpp"
 
 namespace Implicit
 {
-	class Union : public Object
+	class Union : public Operator
 	{
 	public:
 		/**
-		 * \brief Construct a union object
-		 * uses default iso value of 0.5
+		 * \brief Construct a Union Object
+		 * Averages the iso value of the two objects
 		 */
-		Union();
+		Union(Object* left, Object* right);
 
-		Union(float iso);
+		/**
+		 * \brief Constructs a Union Object
+		 * Sets the iso value to iso
+		 */
+		Union(Object* left, Object* right, float iso);
 
 		virtual float Evaluate(glm::vec3 point);
 		virtual float FieldValue(glm::vec3 point);

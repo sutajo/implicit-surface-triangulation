@@ -23,17 +23,21 @@ namespace Implicit
 	class Transform : public Object
 	{
 	public:
-		Transform(Object* child);
 		Transform(Object* child, const glm::mat4& m);
 
 
-		virtual float Evaluate(glm::vec3 point);
-		virtual float FieldValue(glm::vec3 point);
-		virtual glm::vec3 Normal(glm::vec3 point);
+		virtual float Evaluate(const glm::vec3& point);
+		virtual float FieldValue(const glm::vec3& point);
+		virtual glm::vec3 Normal(const glm::vec3& point);
 		virtual glm::vec3 GetStartVertex();
 
-		void setWorldMatrix(const glm::mat4& m);
+	protected:
+		Object* m_child;
+
 	private:
+		void setWorldMatrix(const glm::mat4& m);
+
+
 		glm::vec3 map_to(glm::vec3 world_point);
 		glm::vec3 map_from(glm::vec3 local_point);
 		glm::mat4 m_to_local;

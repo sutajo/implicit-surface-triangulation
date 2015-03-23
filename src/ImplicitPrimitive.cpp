@@ -28,17 +28,6 @@ Primitive::Primitive(FieldFunction f, float iso, float radius) :
 	m_radius(radius)
 { }
 
-Primitive::Primitive(FieldFunction f, glm::vec3 center, float iso,
-		float radius) :
-	Object(center, iso),
-	m_fieldFunction(f),
-	m_radius(radius)
-{ }
-
-void Primitive::SetRadius(float radius)
-{
-	m_radius = radius;
-}
 
 float Primitive::FieldValue(float r)
 {
@@ -50,31 +39,30 @@ float Primitive::Evaluate(float r)
 	return FieldValue(r) - m_iso;
 }
 
-float Primitive::FieldValue(glm::vec3 pt)
+float Primitive::Evaluate(const glm::vec3& p)
 {
-	return FieldValue(getDistance(pt));
+	return Evaluate(getDistance(p));
 }
 
-float Primitive::Evaluate(glm::vec3 pt)
+float Primitive::FieldValue(const glm::vec3& p)
 {
-	return FieldValue(pt) - m_iso;
+	return FieldValue(getDistance(p));
 }
 
-glm::vec3 Primitive::StartPoint()
+glm::vec3 Primitive::Normal(const glm::vec3& point)
 {
-	return project(m_center);
+	if (point == glm::vec3(0, 0, 0)) return glm::vec3(0, 1, 0);
+	return glm::normalize(point);
 }
 
-glm::vec3 Primitive::Normal(glm::vec3 pt)
+float Primitive::getDistance(const glm::vec3& p)
 {
-	if (pt == m_center) return glm::vec3(0, 1, 0);
-	return glm::normalize(pt - m_center);
+	return glm::length(p);
 }
 
-
-// Protected Methods
-float Primitive::getDistance(glm::vec3 pt)
+glm::vec3 Primitive::GetStartVertex()
 {
-	return glm::length(pt - m_center);
+	return Project(glm::vec3(0, 0, 0));
 }
+
 

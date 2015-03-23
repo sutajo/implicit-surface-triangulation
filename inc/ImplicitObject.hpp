@@ -57,29 +57,10 @@ namespace Implicit
 		void SetIso(float iso);
 
 		/**
-		 * \brief Sets the right node of the tree
-		 * \param obj Object node to be the right sub-tree
+		 * \brief get the iso value of the surface
+		 * \return iso value
 		 */
-		void SetRightObject(Object* obj);
-
-		/**
-		 * \brief Sets the left node of the tree
-		 * \param obj Object node to be the left sub-tree
-		 */
-		void SetLeftObject(Object* obj);
-
-		/**
-		 * \brief Gets the right sub-tree
-		 * \return right subtree pointer
-		 */
-		Object* GetRightObject();
-
-		/**
-		 * \brief Gets the left sub-tree
-		 * \return left subtree pointer
-		 */
-		Object* GetLeftObject();
-
+		float GetIso();
 
 		/**
 		 * \brief evaluate the surface at a given point
@@ -88,7 +69,7 @@ namespace Implicit
 		 *
 		 * \param point the point to evaluate
 		 */
-		virtual float Evaluate(glm::vec3 point)=0;
+		virtual float Evaluate(const glm::vec3& point)=0;
 
 		/**
 		 * \brief Evaluates field function at point
@@ -97,7 +78,7 @@ namespace Implicit
 		 *
 		 * \return The result of the field function at the point
 		 */
-		virtual float FieldValue(glm::vec3 point)=0;
+		virtual float FieldValue(const glm::vec3& point)=0;
 
 		/**
 		 * \brief Projects a point onto the surface of the object
@@ -110,14 +91,14 @@ namespace Implicit
 		/**
 		 * \brief Gets the normal of the surface at a given point.
 		 */
-		virtual glm::vec3 Normal(glm::vec3 point)=0;
+		virtual glm::vec3 Normal(const glm::vec3& point)=0;
 
 		/**
 		 * \brief Get an initial vertex on the surface
 		 *
 		 * \return The vertex on the surface of the object
 		 */
-		virtual glm::vec3 GetStartVertex();
+		virtual glm::vec3 GetStartVertex()=0;
 
 		/**
 		 * \brief Get Curvature of surface at a point
@@ -198,9 +179,6 @@ namespace Implicit
 		 * \brief Iso value where surface is defined
 		 */
 		float m_iso;
-
-		Object* m_right_object;
-		Object* m_left_object;
 	private:
 
 
