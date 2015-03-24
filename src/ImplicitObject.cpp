@@ -30,10 +30,15 @@ float Object::GetIso()
 }
 
 
-glm::vec3 Object::Project(glm::vec3 p)
+glm::vec3 Object::Project(const glm::vec3& p)
 {
 	return project(p);
 }
+
+/*glm::vec3 Object::Project(const glm::vec3& p, glm::vec3 d)
+{
+	return p + d * findRoot(p, d);
+} */
 
 void Object::Curvature(const glm::vec3& pt, float& k1, float& k2)
 {
@@ -132,7 +137,7 @@ glm::mat3 Object::surfaceCurvature(const glm::mat3& m)
 	return C;
 }
 
-float Object::findRoot(glm::vec3 point, glm::vec3 direction)
+float Object::findRoot(const glm::vec3& point, glm::vec3 direction)
 {
 	direction = glm::normalize(direction);
 	float ret_val;
@@ -173,10 +178,17 @@ void Object::getTangentSpace(const glm::vec3& N, glm::vec3& T, glm::vec3& B)
 	B = glm::normalize(B);
 }
 
-glm::vec3 Object::project(glm::vec3 pt)
+glm::vec3 Object::project(const glm::vec3& pt)
 {
 	// the point + some distance along the gradient
 	// Gives us the point on the surface
 	return pt + (Normal(pt) * findRoot(pt, Normal(pt)));
+}
+
+float Object::DistanceFromSurface(const glm::vec3& pt)
+{
+	const glm::vec3 direction = glm::normalize(pt - GetCenterVertex());
+	const glm::vec3 surface_point = direction * findRoot(GetCenterVertex(), direction);
+	return glm::length(pt - surface_point);
 }
 

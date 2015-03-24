@@ -85,8 +85,27 @@ namespace Implicit
 		 *
 		 * Note: The initial point must be within the range of the
 		 * falloff field function.
+		 *
+		 * Note: This uses a numerical root finding method, it may
+		 * fail.
+		 *
+		 * \param pt Point to project to the surface
 		 */
-		glm::vec3 Project(glm::vec3 pt);
+		glm::vec3 Project(const glm::vec3& pt);
+
+		/**
+		 * \brief Attempts to project in a given direction
+		 *
+		 * Note: The initial point must be within the range of the
+		 * falloff field function.
+		 *
+		 * Note: This uses a numerical root finding method, it may
+		 * fail.
+		 *
+		 * \param pt Point to project to the surface
+		 * \param direciton Direction to take to project to the surface
+		 */
+		//glm::vec3 Project(const glm::vec3& pt, glm::vec3 direction);
 
 		/**
 		 * \brief Gets the normal of the surface at a given point.
@@ -120,6 +139,18 @@ namespace Implicit
 		 *
 		 */
 		void Curvature(const glm::vec3& pt, float& k1, float& k2);
+
+
+
+		/**
+		 * \brief Gets the distance of a point to the surface
+		 *
+		 * Note: This uses a numerical root finding method, it may
+		 * fail.
+		 *
+		 * \param pt Point to get distance of
+		 */
+		float DistanceFromSurface(const glm::vec3& pt);
 
 
 
@@ -161,7 +192,7 @@ namespace Implicit
 		 * \return The distance along the direction to move to
 		 * intersect the surface
 		 */
-		float findRoot(glm::vec3 point, glm::vec3 direction);
+		float findRoot(const glm::vec3& point, glm::vec3 direction);
 
 		/**
 		 * \brief Generate Tangent space
@@ -178,7 +209,7 @@ namespace Implicit
 		 * \brief Projects a vertex onto the surface
 		 * \param pt The point to be projected
 		 */
-		glm::vec3 project(glm::vec3 pt);
+		glm::vec3 project(const glm::vec3& pt);
 
 		/**
 		 * \brief Iso value where surface is defined
