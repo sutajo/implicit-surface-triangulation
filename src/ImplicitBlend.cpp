@@ -43,3 +43,5 @@ glm::vec3 Blend::Normal(const glm::vec3& point)
 	return glm::normalize(left_normal * (left_fv/total_fv) +
 			right_normal * (right_fv/total_fv));
 }
+
+

@@ -18,18 +18,18 @@ Union::Union(Object* left, Object* right, float iso) :
 	Operator(left, right, iso)
 { }
 
-float Union::Evaluate(glm::vec3 point)
+float Union::Evaluate(const glm::vec3& point)
 {
 	return FieldValue(point) - m_iso;
 }
 
-float Union::FieldValue(glm::vec3 point)
+float Union::FieldValue(const glm::vec3& point)
 {
 	return std::max(m_left_child->FieldValue(point),
 			m_right_child->FieldValue(point));
 }
 
-glm::vec3 Union::Normal(glm::vec3 point)
+glm::vec3 Union::Normal(const glm::vec3& point)
 {
 	float left_field_value = m_left_child->FieldValue(point);
 	float right_field_value = m_right_child->FieldValue(point);

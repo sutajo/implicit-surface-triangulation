@@ -33,9 +33,10 @@ namespace Implicit
 		 */
 		Operator(Object* left, Object* right, float iso);
 
-		virtual float Evaluate(glm::vec3 point)=0;
-		virtual float FieldValue(glm::vec3 point)=0;
-		virtual glm::vec3 Normal(glm::vec3 point)=0;
+		virtual float Evaluate(const glm::vec3& point)=0;
+		virtual float FieldValue(const glm::vec3& point)=0;
+		virtual glm::vec3 Normal(const glm::vec3& point)=0;
+		virtual glm::vec3 GetStartVertex();
 		virtual glm::vec3 GetCenterVertex();
 	protected:
 		Object* m_left_child;

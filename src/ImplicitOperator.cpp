@@ -23,6 +23,11 @@ Operator::Operator(Object* left, Object* right, float iso) :
 	m_right_child(right)
 { }
 
+glm::vec3 Operator::GetStartVertex()
+{
+	return Project(GetCenterVertex());
+}
+
 glm::vec3 Operator::GetCenterVertex()
 {
 	return (m_left_child->GetCenterVertex()-m_right_child->GetCenterVertex())*0.5f;

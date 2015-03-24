@@ -29,10 +29,10 @@ namespace Implicit
 		 */
 		Union(Object* left, Object* right, float iso);
 
-		virtual float Evaluate(glm::vec3 point);
-		virtual float FieldValue(glm::vec3 point);
+		virtual float Evaluate(const glm::vec3& point);
+		virtual float FieldValue(const glm::vec3& point);
 
-		virtual glm::vec3 Normal(glm::vec3 point);
+		virtual glm::vec3 Normal(const glm::vec3& point);
 	};
 };
 
