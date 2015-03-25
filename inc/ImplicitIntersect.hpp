@@ -15,12 +15,17 @@ namespace Implicit
 {
 	class Intersect : public Operator
 	{
+	public:
 		/**
 		 * \brief Construct the intersection of two objects
 		 * Averages the iso values of the two objects
 		 */
 		Intersect(Object* left, Object* right);
 
+		/**
+		 * \brief Construct the intersection of two objects
+		 * Sets the iso value to iso
+		 */
 		Intersect(Object* left, Object* right, float iso);
 
 		virtual float Evaluate(const glm::vec3& point);

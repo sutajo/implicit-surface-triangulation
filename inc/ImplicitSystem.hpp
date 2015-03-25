@@ -29,6 +29,7 @@ namespace Implicit {};
 #include "ImplicitOperator.hpp"
 #include "ImplicitUnion.hpp"
 #include "ImplicitBlend.hpp"
+#include "ImplicitIntersect.hpp"
 
 
 #include "ImplicitTransform.hpp"
