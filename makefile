@@ -41,7 +41,7 @@ D_REL	:= release/
 
 # Flags
 CFLAGS	= -c -iquote $(D_INC) -march=native -mfpmath=sse
-LIBS	= -pthread -lGL
+LIBS	= -pthread
 CXFLAGS = $(CFLAGS) -std=c++11
 
 # Generate Object file names
@@ -71,10 +71,12 @@ TEST_OBJS	= \
 
 .PHONY:	all release debug test clean rebuild docs
 # No optimizations
+
+program: $(D_BIN)$(EXEC)
+
 all: library program
 
 
-program: $(D_BIN)$(EXEC)
 
 # Build the library
 #

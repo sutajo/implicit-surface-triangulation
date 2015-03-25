@@ -1,3 +1,11 @@
+/*
+ * ImplicitScale
+ *
+ * File: 	ImplicitScale.hpp
+ * Author:	Evan Wilde		<etcwilde@uvic.ca>
+ * Date:	Mar 25 2015
+ */
+
 #ifndef IMPLICIT_SCALE_HPP
 #define IMPLICIT_SCALE_HPP
 #include "ImplicitTransform.hpp"

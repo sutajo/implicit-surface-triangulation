@@ -12,11 +12,6 @@
 #include <glm/glm.hpp>
 #include "floatlibs.hpp"
 
-#ifdef DEBUG
-#include <iostream>
-#include "vecHelp.hpp"
-#endif
-
 #define FIND_ROOT_ITERS 100
 
 namespace Implicit

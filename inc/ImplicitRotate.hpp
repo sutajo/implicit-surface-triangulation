@@ -1,3 +1,11 @@
+/*
+ * ImplicitRotate
+ *
+ * File: 	ImplicitRotate.hpp
+ * Author:	Evan Wilde		<etcwilde@uvic.ca>
+ * Date:	Mar 25 2015
+ */
+
 #ifndef IMPLICIT_ROTATE_HPP
 #define IMPLICIT_ROTATE_HPP
 

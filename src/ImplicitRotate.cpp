@@ -1,3 +1,11 @@
+/*
+ * ImplicitRotate
+ *
+ * File: 	ImplicitRotate.cpp
+ * Author:	Evan Wilde		<etcwilde@uvic.ca>
+ * Date:	Mar 25 2015
+ */
+
 #include "ImplicitRotate.hpp"
 
 using namespace Implicit;
