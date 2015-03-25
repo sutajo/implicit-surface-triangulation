@@ -1,10 +1,8 @@
 # Evan Wide
 # Generic Makefile
-# 
+#
 # LIBS
 # pthread  	Threading
-# GL		OpenGl
-# glfw		glfw -- Maybe don't need
 #
 # Flags
 # march=native
@@ -18,9 +16,7 @@
 # TEST on test build
 #
 
-
-
-# EXEC 	= implicit
+EXEC 	= Implicit
 LIBRARY	= Implicit
 
 # Commands
@@ -34,17 +30,18 @@ MKDIR	= mkdir -p
 CP	= cp
 
 # Directories
-D_SRC	= src/
-D_BUILD	= build/
-D_BIN	= bin/
-D_LIB	= libs/
-D_INC	= inc/
-D_TEST	= tests/
-D_DOCS	= docs/
+D_SRC	:= src/
+D_BUILD	:= build/
+D_BIN	:= bin/
+D_LIB	:= libs/
+D_INC	:= inc/
+D_TEST	:= tests/
+D_DOCS	:= docs/
+D_REL	:= release/
 
 # Flags
 CFLAGS	= -c -iquote $(D_INC) -march=native -mfpmath=sse
-LIBS	= -pthread -lGL -lglfw
+LIBS	= -pthread -lGL
 CXFLAGS = $(CFLAGS) -std=c++11
 
 # Generate Object file names
@@ -72,20 +69,36 @@ TEST_OBJS	= \
 	  $(patsubst $(D_TEST)%.C, $(D_BUILD)%.o, \
 	  $(patsubst $(D_TEST)%.cc, $(D_BUILD)%.o, $(TEST_SRCS)))))
 
-# $(warning( $(SRCS))
-# $(warning( $(OBJS))
-
 .PHONY:	all release debug test clean rebuild docs
 # No optimizations
-all: $(D_BIN)$(LIBRARY)
+all: library program
+
+
+program: $(D_BIN)$(EXEC)
+
+# Build the library
+#
+# Copies in:
+# Docs
+# Headers
+# static library
+#
+library: SRCS := $(filter-out $(D_SRC)main.cpp, $(SRCS))
+library: OBJS := $(filter-out $(D_BUILD)main.o, $(OBJS))
+library: CFLAGS += -O3
+library: $(D_REL) $(D_BIN)lib$(LIBRARY).a docs
+	cp -v $(D_BIN)lib$(LIBRARY).a $(D_REL)
+	cp -rv $(D_DOCS)html/ $(D_REL)
+	cp -rv $(D_INC) $(D_REL)
 
 # Optimizations
 release: CFLAGS += -O3
-release: all
+release: program
+
 
 # Debug flags, function names, and all errors reported
 debug: CFLAGS += -g -DDEBUG -Wall
-debug: all
+debug: program
 
 # Unit testing enabled
 test: CFLAGS += -Wall -DTEST
@@ -94,8 +107,10 @@ test: clean  $(TEST_OBJS) all
 
 clean:
 	$(RM) $(D_BUILD)*.o
-	$(RM) $(D_BIN)$(LIBRARY)
+	$(RM) $(D_BIN)$(EXEC)
+	$(RM) $(D_BIN)lib$(LIBRARY).a
 	$(RMD) $(D_DOCS)html
+	$(RMD) $(D_REL)
 
 rebuild: clean all
 
@@ -110,6 +125,9 @@ $(D_BUILD):
 
 $(D_BIN):
 	$(MKDIR) $(D_BIN)
+
+$(D_REL):
+	$(MKDIR) $(D_REL)
 
 # Build files
 # Files with headers
@@ -152,10 +170,10 @@ $(D_BUILD)%.o : $(D_TEST)%.C
 	$(CXX) $(CXFLAGS) $< -o $@
 
 # Build library
-$(D_BIN)$(LIBRARY): $(D_BIN) $(D_BUILD) $(OBJS)
+$(D_BIN)lib$(LIBRARY).a: $(D_BIN) $(D_BUILD) $(OBJS)
 	$(AR) rvs $(D_BIN)lib$(LIBRARY).a $(OBJS)
 
 
 # Link Objects
-# $(D_BIN)$(EXEC): $(D_BIN) $(D_BUILD) $(OBJS)
-# 	$(CXX) -o $(D_BIN)$(EXEC) $(OBJS) $(LIBS)
+$(D_BIN)$(EXEC): $(D_BIN) $(D_BUILD) $(OBJS)
+	$(CXX) -o $(D_BIN)$(EXEC) $(OBJS) $(LIBS)
