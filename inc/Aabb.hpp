@@ -92,10 +92,13 @@ public:
 	 * Designed for ray tracing purposes
 	 * \param origin origin of the ray
 	 * \param direction direction the ray is pointing
-	 * \param distance distance along direction where intersection occurs
+	 * \param hit_point location of closest collision
 	 * \return if ray intersects aabb
+	 *
+	 * Note: If the origin of the ray is within the box, the hit_point will
+	 * be the origin
 	 */
-	bool intersect(const glm::vec3& origin, const glm::vec3& direction, float& distance);
+	bool intersect(const glm::vec3& origin, const glm::vec3& direction, glm::vec3& hit_point);
 
 	glm::vec3 m_maxima;
 	glm::vec3 m_minima;

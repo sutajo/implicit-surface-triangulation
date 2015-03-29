@@ -1,10 +1,6 @@
 #include "Aabb.hpp"
 
-std::ostream& operator << (std::ostream& os, const glm::vec3& v)
-{
-	os << "[ " << v.x << ", " << v.y << ", " << v.z << " ]";
-	return os;
-}
+
 
 void Aabb::reset()
 {
@@ -117,33 +113,110 @@ bool Aabb::overlap(const Aabb& o) const
 	return true;
 }
 
-bool Aabb::intersect(const glm::vec3& origin, const glm::vec3& direction, float& distance)
+
+/*
+ * Andrew Woo's implementation
+ * Graphics Gems, Academic Press, 1990
+ * http://tog.acm.org/resources/GraphicsGems/gems/RayBox.c
+ */
+#define RIGHT 0
+#define LEFT 1
+#define MIDDLE 2
+bool Aabb::intersect(const glm::vec3& origin, const glm::vec3& direction,
+		glm::vec3& hit_point)
 {
-	const glm::vec3 d_inv(1/direction.x, 1/direction.y, 1/direction.z);
-	const float tx1 = (m_minima.x - origin.x) * d_inv.x;
-	const float tx2 = (m_maxima.x - origin.x) * d_inv.x;
-	float tmin;
-	float tmax;
+	bool inside = true;
+	glm::vec3 max_t;
+	char quadrant[3];
+	unsigned int which_plane;
+	glm::vec3 candidate_plane;
 
-	tmin = tx1 <= tx2 ? tx1 : tx2;
-	tmax = tx1 > tx2 ? tx1 : tx2;
+	// Handle x
+	if (origin.x < m_minima.x)
+	{
+		quadrant[0] = LEFT;
+		candidate_plane.x = m_minima.x;
+		inside = false;
+	}
+	else if (origin.x > m_maxima.x)
+	{
+		quadrant[0] = RIGHT;
+		candidate_plane.x = m_maxima.x;
+		inside = false;
+	}
+	else quadrant[0] = MIDDLE;
 
-	const float ty1 = (m_minima.y - origin.y) * d_inv.y;
-	const float ty2 = (m_maxima.y - origin.y) * d_inv.y;
+	// handle y
+	if (origin.y < m_minima.y)
+	{
+		quadrant[1] = LEFT;
+		candidate_plane.y = m_minima.y;
+		inside = false;
+	}
+	else if (origin.y > m_maxima.y)
+	{
+		quadrant[1] = RIGHT;
+		candidate_plane.y = m_maxima.y;
+		inside = false;
+	}
+	else quadrant[1] = MIDDLE;
 
-	tmin = std::max(tmin, std::min(ty1, ty2));
-	tmax = std::min(tmax, std::max(ty1, ty2));
+	// handle z
+	if (origin.z < m_minima.z)
+	{
+		quadrant[2] = LEFT;
+		candidate_plane.z = m_minima.z;
+		inside = false;
+	}
+	else if (origin.z > m_maxima.z)
+	{
+		quadrant[2] = RIGHT;
+		candidate_plane.z = m_maxima.z;
+		inside = false;
+	}
+	else quadrant[2] = MIDDLE;
 
-	const float tz1 = (m_minima.z - origin.z) * d_inv.z;
-	const float tz2 = (m_maxima.z - origin.z) * d_inv.z;
+	/* Ray origin inside of bounding box */
+	if (inside)
+	{
+		hit_point = origin;
+		return true;
+	}
 
-	tmin = std::max(tmin, std::min(tz1, tz2));
-	tmax = std::min(tmax, std::max(tz1, tz2));
+	/* Calculate T distances to candidate planes */
+	// handle x
+	if (quadrant[0] != MIDDLE && direction.x != 0)
+		max_t.x = (candidate_plane.x - origin.x) / direction.x;
+	else
+		max_t.x = -1;
 
-#ifdef DEBUG
-	std::cout << "tmax: " << tmax << " tmin: " << tmin << '\n';
-#endif
+	// handle y
+	if (quadrant[1] != MIDDLE && direction.y != 0)
+		max_t.y = (candidate_plane.y - origin.y) / direction.y;
+	else
+		max_t.x = -1;
 
-	return tmin <= tmax;
+	// handle z
+	if (quadrant[2] != MIDDLE && direction.x != 0)
+		max_t.x = (candidate_plane.x - origin.x) / direction.x;
+	else
+		max_t.x = -1;
 
+	/* get largest of the max_t's for final choice of intersection */
+	which_plane = max_t.x > max_t.x ? (max_t.x > max_t.z ? 0 : 2) : 1;
+	if (max_t[which_plane] < 0) return false;
+
+	for (unsigned int i = 0; i < 3; i++)
+	{
+		if (which_plane != i)
+		{
+			hit_point[i] = origin[i] + max_t[which_plane] * direction[i];
+			if (hit_point[i] < m_minima[i] || hit_point[i] > m_maxima[i])
+				return false;
+		}
+		else
+			hit_point[i] = candidate_plane[i];
+	}
+	return true;
 }
+
