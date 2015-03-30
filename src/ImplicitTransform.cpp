@@ -56,8 +56,8 @@ Aabb Transform::GetBoundingBox()
 {
 	Aabb ret_box;
 	const Aabb child_aabb = m_child->GetBoundingBox();
-	ret_box.include(map_from(child_aabb.m_minima));
-	ret_box.include(map_from(child_aabb.m_maxima));
+	ret_box.include(map_from(child_aabb.min()));
+	ret_box.include(map_from(child_aabb.max()));
 	return ret_box;
 }
 

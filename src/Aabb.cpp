@@ -114,6 +114,16 @@ bool Aabb::overlap(const Aabb& o) const
 	return true;
 }
 
+const glm::vec3& Aabb::min() const
+{
+	return bounds[0];
+}
+const glm::vec3& Aabb::max() const
+{
+	return bounds[1];
+}
+
+
 unsigned int Aabb::hash_ray(const Aabb::AABB_RAY& R)
 {
 	return hash_ray(R.origin, R.direction);

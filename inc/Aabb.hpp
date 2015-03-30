@@ -98,9 +98,9 @@ public:
 	 */
 	bool intersect(const glm::vec3& origin, const glm::vec3& direction, glm::vec3& hit_point);
 
-	glm::vec3 bounds[2];
 
-	//glm::vec3 m_maxima; glm::vec3 m_minima;
+	const glm::vec3& min() const;
+	const glm::vec3& max() const;
 
 private:
 	class AABB_RAY
@@ -157,6 +157,8 @@ private:
 	static unsigned int hash_ray(const AABB_RAY& R);
 
 	AABB_RAY m_ray_cache[AABB_RAY_CACHE_SIZE];
+
+	glm::vec3 bounds[2];
 };
 
 #endif//AABB_HPP
