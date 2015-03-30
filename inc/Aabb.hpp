@@ -1,20 +1,20 @@
 #ifndef AABB_HPP
 #define AABB_HPP
 
+
+#define AABB_RAY_CACHE_SIZE	511
+#define RAY_HASH_MULTIPLIER	0xf4243
+
 #include <vector>
 #include <list>
+#include <functional>
 
 #include <glm/glm.hpp>
 
+#include <string.h>
+
 #include <iostream>
 
-
-
-#ifdef DEBUG
-
-
-
-#endif
 
 
 /**
@@ -46,9 +46,7 @@ public:
 
 	/**
 	 * generates the AABB over a list of vertices
-	 * Overwrites current AABB
-	 */
-	void compute(std::list<glm::vec3>& verts);
+	 * Overwrites current AABB */ void compute(std::list<glm::vec3>& verts);
 
 	/**
 	 * Union this AABB with another AABB
@@ -100,8 +98,65 @@ public:
 	 */
 	bool intersect(const glm::vec3& origin, const glm::vec3& direction, glm::vec3& hit_point);
 
-	glm::vec3 m_maxima;
-	glm::vec3 m_minima;
+	glm::vec3 bounds[2];
+
+	//glm::vec3 m_maxima; glm::vec3 m_minima;
+
+private:
+	class AABB_RAY
+	{
+		public:
+			AABB_RAY() {}
+			AABB_RAY(const glm::vec3& o, const glm::vec3& d) :
+				origin(o),
+				direction(d)
+			{
+				inv_direction = glm::vec3(1/d.x, 1/d.y, 1/d.z);
+				sign[0] = (inv_direction.x < 0);
+				sign[1] = (inv_direction.y < 0);
+				sign[2] = (inv_direction.z < 0);
+			}
+
+			glm::vec3 origin;
+			glm::vec3 direction;
+			glm::vec3 inv_direction;
+			int sign[3];
+	};
+
+	/*
+	 * Algorithm taken from Python Tuple Hash
+	 * #define _PyHASH_MULTIPLIER 1000003
+	 * static Py_hash_t
+	 * tuplehash(PyTupleObject *v)
+	 * {
+	 *
+	 * 	Py_uhash_t x;  // Unsigned for defined overflow behavior.
+	 * 	Py_hash_t y;
+	 * 	Py_ssize_t len = Py_SIZE(v);
+	 * 	PyObject **p;
+	 * 	Py_uhash_t mult = _PyHASH_MULTIPLIER;
+	 * 	x = 0x345678UL;
+	 * 	p = v->ob_item;
+	 * 	while (--len >= 0) {
+	 * 		y = PyObject_Hash(*p++);
+	 * 		if (y == -1)
+	 * 			return -1;
+	 * 		x = (x ^ y) * mult;
+	 * 		//Cast may truncate len; doesn't change stability
+	 * 		mult += (Py_hash_t)(82520UL + len + len);
+	 * 	}
+	 * 	x += 97531UL;
+	 * 	if (x == (Py_uhash_t)-1)
+	 * 		x = -2;
+	 * 	return x;
+	 * }
+	 *
+	 * -- Simplified for six-tuple origin(x, y, z), direction(x, y, z)
+	 */
+	static unsigned int hash_ray(const glm::vec3& origin, const glm::vec3& direction);
+	static unsigned int hash_ray(const AABB_RAY& R);
+
+	AABB_RAY m_ray_cache[AABB_RAY_CACHE_SIZE];
 };
 
 #endif//AABB_HPP
