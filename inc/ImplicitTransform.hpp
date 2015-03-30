@@ -25,12 +25,12 @@ namespace Implicit
 	public:
 		Transform(Object* child, const glm::mat4& m);
 
-
 		virtual float Evaluate(const glm::vec3& point);
 		virtual float FieldValue(const glm::vec3& point);
 		virtual glm::vec3 Normal(const glm::vec3& point);
 		virtual glm::vec3 GetStartVertex();
 		virtual glm::vec3 GetCenterVertex();
+		virtual Aabb GetBoundingBox();
 
 	protected:
 		Transform(Object* child);

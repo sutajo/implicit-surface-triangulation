@@ -19,6 +19,8 @@
  */
 namespace Implicit {};
 
+#include "Aabb.hpp"
+
 #include "fieldFunctions.hpp"
 
 // A spherical blob is all we have for now

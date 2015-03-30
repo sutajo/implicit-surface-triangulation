@@ -52,6 +52,15 @@ glm::vec3 Transform::GetCenterVertex()
 	return (map_from(m_child->GetCenterVertex()));
 }
 
+Aabb Transform::GetBoundingBox()
+{
+	Aabb ret_box;
+	const Aabb child_aabb = m_child->GetBoundingBox();
+	ret_box.include(map_from(child_aabb.m_minima));
+	ret_box.include(map_from(child_aabb.m_maxima));
+	return ret_box;
+}
+
 void Transform::setWorldMatrix(const glm::mat4& m)
 {
 	m_from_local = m;

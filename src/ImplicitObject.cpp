@@ -35,10 +35,38 @@ glm::vec3 Object::Project(const glm::vec3& p)
 	return project(p);
 }
 
-/*glm::vec3 Object::Project(const glm::vec3& p, glm::vec3 d)
+glm::vec3 Object::Project(const glm::vec3& p, glm::vec3 d)
 {
-	return p + d * findRoot(p, d);
-} */
+	return project(p, d);
+}
+
+bool Object::Intersect(const glm::vec3& origin, glm::vec3& cp)
+{
+	return GetBoundingBox().intersect(origin, Normal(origin), cp);
+}
+
+bool Object::Intersect(const glm::vec3& origin, glm::vec3 direction,
+		glm::vec3& cp)
+{
+	return GetBoundingBox().intersect(origin, direction, cp);
+	// First intersect the bounding box
+	// If it does, then project the rest of the way.
+	/*bool i = GetBoundingBox().intersect(origin, direction, cp);
+	if (i)
+	{
+		std::cout << "cp: " << cp.x << " " << cp.y << " " << cp.z << '\n';
+		std::cout << "Evaluates to: " << Evaluate(cp) << '\n';
+		std::cout << "FF: " << FieldValue(cp) << '\n';
+	}
+	if (!i) return false;
+
+	cp = project(cp, direction);
+	std::cout << "Final cp: " << cp.x << " " << cp.y << " " << cp.z << '\n';
+	std::cout << "Evaluates to: " << Evaluate(cp) << '\n';
+	std::cout << "FF: " << FieldValue(cp) << '\n';
+
+	return f_equ(Evaluate(cp), 0); */
+}
 
 void Object::Curvature(const glm::vec3& pt, float& k1, float& k2)
 {
@@ -183,6 +211,11 @@ glm::vec3 Object::project(const glm::vec3& pt)
 	// the point + some distance along the gradient
 	// Gives us the point on the surface
 	return pt + (Normal(pt) * findRoot(pt, Normal(pt)));
+}
+
+glm::vec3 Object::project(const glm::vec3& p, glm::vec3 d)
+{
+	return p + d * findRoot(p, d);
 }
 
 float Object::DistanceFromSurface(const glm::vec3& pt)

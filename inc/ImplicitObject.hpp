@@ -10,6 +10,8 @@
 #define IMPLICIT_OBJECT_HPP
 
 #include <glm/glm.hpp>
+
+#include "Aabb.hpp"
 #include "floatlibs.hpp"
 
 #define FIND_ROOT_ITERS 100
@@ -98,9 +100,28 @@ namespace Implicit
 		 * fail.
 		 *
 		 * \param pt Point to project to the surface
-		 * \param direciton Direction to take to project to the surface
+		 * \param direction Direction to take to project to the surface
 		 */
-		//glm::vec3 Project(const glm::vec3& pt, glm::vec3 direction);
+		glm::vec3 Project(const glm::vec3& pt, glm::vec3 direction);
+
+		/**
+		 * \brief Gets intersection of ray with object
+		 *
+		 * \param origin Starting point of the ray
+		 * \param collision_point Point where ray hits surface
+		 */
+		bool Intersect(const glm::vec3& origin, glm::vec3& collision_point);
+		/**
+		 * \brief Gets intersection of a ray with the object
+		 *
+		 *
+		 * \param origin The starting point of the ray
+		 * \param direction The direction of the ray -- must be
+		 * normalized
+		 * \param collision_point Point where ray hits surface
+		 */
+		bool Intersect(const glm::vec3& origin, glm::vec3 direction,
+				glm::vec3& collision_point);
 
 		/**
 		 * \brief Gets the normal of the surface at a given point.
@@ -120,6 +141,11 @@ namespace Implicit
 		virtual glm::vec3 GetCenterVertex()=0;
 
 		/**
+		 *\brief Gets the bounding box for the object
+		 */
+		virtual Aabb GetBoundingBox()=0;
+
+		/**
 		 * \brief Get Curvature of surface at a point
 		 *
 		 * Calculates the principle curvatures k1 k2
@@ -134,7 +160,6 @@ namespace Implicit
 		 *
 		 */
 		void Curvature(const glm::vec3& pt, float& k1, float& k2);
-
 
 
 		/**
@@ -201,10 +226,17 @@ namespace Implicit
 				glm::vec3& B) const;
 
 		/**
-		 * \brief Projects a vertex onto the surface
+		 * \brief Projects a vertex onto the surface along the normal
 		 * \param pt The point to be projected
 		 */
 		glm::vec3 project(const glm::vec3& pt);
+
+		/**
+		 * \brief projects a vertex onto the surface
+		 * \param pt The point to be projected
+		 * \para direction the director to project in
+		 */
+		glm::vec3 project(const glm::vec3& pt, glm::vec3 direction);
 
 		/**
 		 * \brief Iso value where surface is defined

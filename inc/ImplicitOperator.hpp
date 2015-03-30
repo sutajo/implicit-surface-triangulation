@@ -38,6 +38,7 @@ namespace Implicit
 		virtual glm::vec3 Normal(const glm::vec3& point)=0;
 		virtual glm::vec3 GetStartVertex();
 		virtual glm::vec3 GetCenterVertex();
+		virtual Aabb GetBoundingBox();
 	protected:
 		Object* m_left_child;
 		Object* m_right_child;

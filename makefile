@@ -76,8 +76,6 @@ program: $(D_BIN)$(EXEC)
 
 all: library program
 
-
-
 # Build the library
 #
 # Copies in:
@@ -105,7 +103,8 @@ debug: program
 # Unit testing enabled
 test: CFLAGS += -Wall -DTEST
 test: LIBS += -lcppunit -ldl
-test: clean  $(TEST_OBJS) all
+test: clean
+test: $(TEST_OBJS) program
 
 clean:
 	$(RM) $(D_BUILD)*.o
@@ -174,7 +173,6 @@ $(D_BUILD)%.o : $(D_TEST)%.C
 # Build library
 $(D_BIN)lib$(LIBRARY).a: $(D_BIN) $(D_BUILD) $(OBJS)
 	$(AR) rvs $(D_BIN)lib$(LIBRARY).a $(OBJS)
-
 
 # Link Objects
 $(D_BIN)$(EXEC): $(D_BIN) $(D_BUILD) $(OBJS)

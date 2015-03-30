@@ -14,19 +14,25 @@ Primitive::Primitive(FieldFunction f) :
 	Object(),
 	m_fieldFunction(f),
 	m_radius(1)
-{ }
+{
+	compute_bounds();
+}
 
 Primitive::Primitive(FieldFunction f, float iso) :
 	Object(iso),
 	m_fieldFunction(f),
 	m_radius(1)
-{ }
+{
+	compute_bounds();
+}
 
 Primitive::Primitive(FieldFunction f, float iso, float radius) :
 	Object(iso),
 	m_fieldFunction(f),
 	m_radius(radius)
-{ }
+{
+	compute_bounds();
+}
 
 
 float Primitive::FieldValue(float r)
@@ -55,6 +61,12 @@ glm::vec3 Primitive::Normal(const glm::vec3& point)
 	return glm::normalize(point);
 }
 
+Aabb Primitive::GetBoundingBox()
+{
+	return m_bounds;
+}
+
+
 float Primitive::getDistance(const glm::vec3& p)
 {
 	return glm::length(p);
@@ -68,6 +80,18 @@ glm::vec3 Primitive::GetStartVertex()
 glm::vec3 Primitive::GetCenterVertex()
 {
 	return glm::vec3(0, 0, 0);
+}
+
+void Primitive::compute_bounds()
+{
+	std::list<glm::vec3> points;
+	points.push_back(glm::vec3(m_radius, 0, 0) );
+	points.push_back(glm::vec3(-m_radius, 0, 0));
+	points.push_back(glm::vec3(0, m_radius, 0) );
+	points.push_back(glm::vec3(0, -m_radius, 0));
+	points.push_back(glm::vec3(0, 0, m_radius) );
+	points.push_back(glm::vec3(0, 0, -m_radius));
+	m_bounds.compute(points);
 }
 
 

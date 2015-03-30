@@ -32,3 +32,11 @@ glm::vec3 Operator::GetCenterVertex()
 {
 	return (m_left_child->GetCenterVertex()-m_right_child->GetCenterVertex())*0.5f;
 }
+
+Aabb Operator::GetBoundingBox()
+{
+	Aabb ret_box;
+	ret_box.add(m_left_child->GetBoundingBox());
+	ret_box.add(m_right_child->GetBoundingBox());
+	return ret_box;
+}
