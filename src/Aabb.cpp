@@ -43,9 +43,6 @@ void Aabb::compute(std::list<glm::vec3>& verts)
 			i != verts.end(); i++) include(*i);
 }
 
-
-
-
 void Aabb::add(const Aabb& other)
 {
 	const glm::vec3& max_other = other.bounds[1];
@@ -112,6 +109,14 @@ bool Aabb::overlap(const Aabb& o) const
 	if (bounds[1].y > o.bounds[0].y) return false;
 	if (bounds[1].z > o.bounds[0].z) return false;
 	return true;
+}
+
+bool Aabb::contains(const glm::vec3& p) const
+{
+	return
+		((bounds[0].x < p.x) && (p.x < bounds[1].x)) &
+		((bounds[0].y < p.y) && (p.y < bounds[1].y)) &
+		((bounds[0].z < p.z) && (p.z < bounds[1].z));
 }
 
 const glm::vec3& Aabb::min() const

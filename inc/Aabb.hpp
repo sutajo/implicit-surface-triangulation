@@ -9,8 +9,7 @@
 #include <list>
 #include <functional>
 
-#include <glm/glm.hpp>
-
+#include <glm/glm.hpp> 
 #include <string.h>
 
 #include <iostream>
@@ -83,6 +82,14 @@ public:
 	 * \brief Determine if the AABB overlaps another
 	 */
 	bool overlap(const Aabb& other) const;
+
+	/**
+	 * \brief Determines if a point is in the bounding box
+	 * \param point point to test
+	 * \return if the point is within the bounding box
+	 */
+	bool contains(const glm::vec3& point) const;
+
 
 	/**
 	 * \brief Determines if a ray intersects the AABB
