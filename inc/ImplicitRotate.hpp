@@ -51,6 +51,8 @@ namespace Implicit
 			 * \param angle Amount to rotate around the axis
 			 */
 			Rotate(Object* child, const glm::vec3& axis, float angle);
+			virtual glm::vec3 Normal(const glm::vec3& point);
+
 	};
 };
 #endif//IMPLICIT_ROTATE_HPP

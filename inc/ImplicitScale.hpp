@@ -47,6 +47,10 @@ namespace Implicit
 		 * \param s Uniform scale factor
 		 */
 		Scale(Object* child, float s);
+
+		virtual glm::vec3 Normal(const glm::vec3& point);
+	private:
+		glm::mat4 m_normal_conversion;
 	};
 };
 #endif//IMPLICIT_SCALE_HPP

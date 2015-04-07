@@ -33,14 +33,14 @@ float Transform::FieldValue(const glm::vec3& point)
 	return m_child->FieldValue(map_to(point));
 }
 
-glm::vec3 Transform::Normal(const glm::vec3& point)
+/*glm::vec3 Transform::Normal(const glm::vec3& point)
 {
 	return glm::normalize(
 			glm::vec3(m_normal_conversion *
 				glm::vec4(m_child->Normal(map_to(point)), 1.f)
 				)
 			);
-}
+} */
 
 glm::vec3 Transform::GetStartVertex()
 {
@@ -65,7 +65,7 @@ void Transform::setWorldMatrix(const glm::mat4& m)
 {
 	m_from_local = m;
 	m_to_local = glm::inverse(m);
-	m_normal_conversion = glm::inverseTranspose(m);
+	//m_normal_conversion = glm::inverseTranspose(m);
 }
 
 glm::vec3 Transform::map_to(glm::vec3 v)

@@ -66,3 +66,9 @@ Rotate::Rotate(Object* child, const glm::vec3& axis, float angle) :
 {
 	setWorldMatrix(glm::rotate(glm::mat4(), angle, axis));
 }
+
+
+glm::vec3 Rotate::Normal(const glm::vec3& p)
+{
+	return m_child->Normal(map_to(p));
+}

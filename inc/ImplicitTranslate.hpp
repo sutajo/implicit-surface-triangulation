@@ -20,6 +20,7 @@ namespace Implicit
 	public:
 		Translate(Object* child, const glm::vec3& direction);
 		Translate(Object* child, float x, float y, float z);
+		virtual glm::vec3 Normal(const glm::vec3& point);
 	};
 
 };

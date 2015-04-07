@@ -29,3 +29,8 @@ Translate::Translate(Object *child, float x, float y, float z) :
 	translation[3][2] = z;
 	setWorldMatrix(translation);
 }
+
+glm::vec3 Translate::Normal(const glm::vec3& p)
+{
+	return m_child->Normal(map_to(p));
+}
