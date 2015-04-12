@@ -136,7 +136,6 @@ namespace Implicit
 
 		virtual glm::vec3 Normal(const glm::vec3& point);
 
-		virtual Aabb GetBoundingBox();
 	protected:
 
 		/**
@@ -156,12 +155,7 @@ namespace Implicit
 		 */
 		float m_radius;
 	private:
-
 		void compute_bounds();
-
-		// Bounding box
-		Aabb m_bounds;
-
 	};
 };
 

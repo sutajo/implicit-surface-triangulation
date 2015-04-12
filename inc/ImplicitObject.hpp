@@ -14,6 +14,10 @@
 #include "Aabb.hpp"
 #include "floatlibs.hpp"
 
+#ifdef DEBUG
+#include "VecPrint.hpp"
+#endif
+
 #define FIND_ROOT_ITERS 100
 
 namespace Implicit
@@ -141,11 +145,6 @@ namespace Implicit
 		virtual glm::vec3 GetCenterVertex()=0;
 
 		/**
-		 *\brief Gets the bounding box for the object
-		 */
-		virtual Aabb GetBoundingBox()=0;
-
-		/**
 		 * \brief Get Curvature of surface at a point
 		 *
 		 * Calculates the principle curvatures k1 k2
@@ -173,6 +172,11 @@ namespace Implicit
 		float DistanceFromSurface(const glm::vec3& pt);
 
 
+		/**
+		 * \brief used for getting the bounding box of the object
+		 * \return constant reference to the bounding box
+		 */
+		Aabb GetBoundingBox();
 
 	protected:
 		/**
@@ -242,9 +246,10 @@ namespace Implicit
 		 * \brief Iso value where surface is defined
 		 */
 		float m_iso;
+
+		// Bounding box
+		Aabb m_bounds;
 	private:
-
-
 
 	};
 };

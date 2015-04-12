@@ -33,6 +33,9 @@ namespace Implicit
 		virtual float FieldValue(const glm::vec3& point);
 
 		virtual glm::vec3 Normal(const glm::vec3& point);
+	private:
+		void compute_bounds();
+
 	};
 };
 

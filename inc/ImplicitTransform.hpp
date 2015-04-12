@@ -27,12 +27,9 @@ namespace Implicit
 
 		virtual float Evaluate(const glm::vec3& point);
 		virtual float FieldValue(const glm::vec3& point);
-		//virtual glm::vec3 Normal(const glm::vec3& point);
 		virtual glm::vec3 Normal(const glm::vec3& point)=0;
 		virtual glm::vec3 GetStartVertex();
 		virtual glm::vec3 GetCenterVertex();
-		virtual Aabb GetBoundingBox();
-
 	protected:
 		Transform(Object* child);
 		void setWorldMatrix(const glm::mat4& m);
@@ -44,7 +41,6 @@ namespace Implicit
 	private:
 		glm::mat4 m_to_local;
 		glm::mat4 m_from_local;
-		//glm::mat4 m_normal_conversion;
 	};
 };
 

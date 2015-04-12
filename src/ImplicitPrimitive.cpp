@@ -61,12 +61,6 @@ glm::vec3 Primitive::Normal(const glm::vec3& point)
 	return glm::normalize(point);
 }
 
-Aabb Primitive::GetBoundingBox()
-{
-	return m_bounds;
-}
-
-
 float Primitive::getDistance(const glm::vec3& p)
 {
 	return glm::length(p);

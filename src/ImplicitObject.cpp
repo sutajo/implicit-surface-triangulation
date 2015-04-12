@@ -90,6 +90,12 @@ void Object::Curvature(const glm::vec3& pt, float& k1, float& k2)
 }
 
 
+Aabb Object::GetBoundingBox()
+{
+	return m_bounds;
+}
+
+
 void Object::getDeltas(float& dx, float& dy, float& dz, const glm::vec3& pt,
 		float eps)
 {

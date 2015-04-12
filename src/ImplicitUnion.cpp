@@ -12,11 +12,15 @@ using namespace Implicit;
 
 Union::Union(Object* left, Object* right) :
 	Operator(left, right)
-{ }
+{
+	compute_bounds();
+}
 
 Union::Union(Object* left, Object* right, float iso) :
 	Operator(left, right, iso)
-{ }
+{
+	compute_bounds();
+}
 
 float Union::Evaluate(const glm::vec3& point)
 {
@@ -31,17 +35,13 @@ float Union::FieldValue(const glm::vec3& point)
 
 glm::vec3 Union::Normal(const glm::vec3& point)
 {
-/*	float left_field_value = m_left_child->FieldValue(point);
-	float right_field_value = m_right_child->FieldValue(point);
-	float total_field_value = left_field_value + right_field_value;
-
-
-	float left_contrib = left_field_value / total_field_value;
-	float right_contrib = right_field_value / total_field_value;
-
-	return glm::normalize(m_left_child->Normal(point) * left_contrib +
-		m_right_child->Normal(point) * right_contrib); */
 	if (m_left_child->FieldValue(point) > m_right_child->FieldValue(point))
 		return m_left_child->Normal(point);
 	return m_right_child->Normal(point);
+}
+
+void Union::compute_bounds()
+{
+	m_bounds.add(m_left_child->GetBoundingBox());
+	m_bounds.add(m_right_child->GetBoundingBox());
 }

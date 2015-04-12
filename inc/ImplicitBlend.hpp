@@ -41,6 +41,7 @@ namespace Implicit
 	protected:
 
 	private:
+		void compute_bounds();
 	};
 };
 
