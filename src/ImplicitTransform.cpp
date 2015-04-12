@@ -31,7 +31,9 @@ float Transform::Evaluate(const glm::vec3& point)
 
 float Transform::FieldValue(const glm::vec3& point)
 {
-	return m_child->FieldValue(map_to(point));
+	if (m_bounds.contains(point))
+		return m_child->FieldValue(map_to(point));
+	else return 0;
 }
 
 glm::vec3 Transform::GetStartVertex()

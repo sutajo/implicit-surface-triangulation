@@ -28,8 +28,8 @@ float Intersect::Evaluate(const glm::vec3& point)
 
 float Intersect::FieldValue(const glm::vec3& point)
 {
-	return std::min(m_left_child->FieldValue(point),
-			m_right_child->FieldValue(point));
+	if (!m_bounds.contains(point)) return 0;
+	return std::min(m_left_child->FieldValue(point), m_right_child->FieldValue(point));
 }
 
 glm::vec3 Intersect::Normal(const glm::vec3& point)

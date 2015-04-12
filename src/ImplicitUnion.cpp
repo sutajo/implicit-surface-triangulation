@@ -29,6 +29,7 @@ float Union::Evaluate(const glm::vec3& point)
 
 float Union::FieldValue(const glm::vec3& point)
 {
+	if (!m_bounds.contains(point)) return 0;
 	return std::max(m_left_child->FieldValue(point),
 			m_right_child->FieldValue(point));
 }
