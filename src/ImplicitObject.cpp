@@ -171,13 +171,13 @@ glm::mat3 Object::surfaceCurvature(const glm::mat3& m)
 	return C;
 }
 
-float Object::findRoot(const glm::vec3& point, glm::vec3 direction)
+float Object::findRoot(const glm::vec3& point, glm::vec3 direction, float id)
 {
 	direction = glm::normalize(direction);
 	float ret_val;
 	register float xi;
 	register float xi1 = 0;
-	register float xi2 = 1;
+	register float xi2 = id;
 #ifdef DEBUG
 	unsigned int iteration = 0;
 #endif

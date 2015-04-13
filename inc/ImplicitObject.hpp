@@ -216,7 +216,8 @@ namespace Implicit
 		 * \return The distance along the direction to move to
 		 * intersect the surface
 		 */
-		float findRoot(const glm::vec3& point, glm::vec3 direction);
+		float findRoot(const glm::vec3& point, glm::vec3 direction,
+				float initial_distance=1);
 
 		/**
 		 * \brief Generate Tangent space

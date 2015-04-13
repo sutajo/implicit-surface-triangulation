@@ -68,7 +68,7 @@ float Primitive::getDistance(const glm::vec3& p)
 
 glm::vec3 Primitive::GetStartVertex()
 {
-	return Project(glm::vec3(0, 0, 0));
+	return project(glm::vec3(0, 0, 0));
 }
 
 glm::vec3 Primitive::GetCenterVertex()

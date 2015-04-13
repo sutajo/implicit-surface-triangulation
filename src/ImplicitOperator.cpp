@@ -26,7 +26,7 @@ Operator::Operator(Object* left, Object* right, float iso) :
 
 glm::vec3 Operator::GetStartVertex()
 {
-	return Project(GetCenterVertex());
+	return project(GetCenterVertex());
 }
 
 glm::vec3 Operator::GetCenterVertex()
