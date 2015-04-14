@@ -12,7 +12,6 @@ Jim Blinn origianlly used Blobs, or "Blobby Molecules" to model electron density
 
 Since then they have evolved to handle other more complex geometries.
 
-
 ## Building The Blob Tree
 ### Requirements
 - make
@@ -47,3 +46,13 @@ itself.
 ###### To Generate documentaiton
 `make docs` will create a directory `docs/html/` containing the documentation for the implicit system.
 
+## Structure
+- The `master` branch is for working, apparently stable, code.
+- The `dev` branch is for ideas being developed. This code will probably work.
+- Assume all branches off of `dev` to be experimental and don't work.
+
+### Naming Scheme
+We will begin using the standard version scheme of major.minor.build
+- major number will be incremented any time there is a public api-breaking change
+- minor number will be incremented with every major change to the system
+- build will be one of 0: alpha, 1: beta, 2: release
