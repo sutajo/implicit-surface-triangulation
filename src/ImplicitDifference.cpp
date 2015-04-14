@@ -30,14 +30,19 @@ float Difference::Evaluate(const glm::vec3& point)
 float Difference::FieldValue(const glm::vec3& point)
 {
 	if (!m_bounds.contains(point)) return 0;
-	return std::min(m_left_child->FieldValue(point), m_right_child->FieldValue(point));
+	return std::min(m_left_child->FieldValue(point),
+			m_left_child->FieldValue(point) -
+			m_right_child->FieldValue(point));
 }
 
 glm::vec3 Difference::Normal(const glm::vec3& point)
 {
-	if (m_left_child->FieldValue(point) < m_right_child->FieldValue(point))
-		return m_left_child->Normal(point);
-	return m_right_child->Normal(point);
+	if (m_left_child->FieldValue(point) <
+			m_left_child->FieldValue(point) -
+			m_right_child->FieldValue(point))
+		return -m_right_child->Normal(point);
+	return m_left_child->Normal(point);
+
 }
 
 void Difference::compute_bounds()
