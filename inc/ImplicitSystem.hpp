@@ -23,8 +23,8 @@ namespace Implicit {};
 
 #include "fieldFunctions.hpp"
 
-// A spherical blob is all we have for now
 #include "ImplicitPrimitive.hpp"
+#include "ImplicitSphere.hpp"
 
 #include "ImplicitObject.hpp"
 

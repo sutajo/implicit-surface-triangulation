@@ -68,19 +68,46 @@ namespace Implicit
 		 */
 		Primitive(FieldFunction f, float iso, float radius);
 
+
+
 		/**
-		 * \brief Create new Primitive
+		 * \brief Evaluate the surface at a given point
 		 *
-		 * Creates a new Primitive with a defined FieldFunction, iso
-		 * value and radius.
+		 * Where this evaluates to 0, the surface is defined
 		 *
-		 * \param f The FieldFunction for the Primitive
-		 * \param center The center position of the primitive
-		 * \param iso The iso value where the surface is defined
-		 * \param radius The radius of the object
+		 * \param point The point to evaluate
 		 */
-		Primitive(FieldFunction f, glm::vec3 center, float iso,
-				float radius);
+		virtual float Evaluate(const glm::vec3& point)=0;
+
+		/**
+		 * \brief Evaluate the field function at a given point
+		 *
+		 * \param point The point to evaluate
+		 */
+		virtual float FieldValue(const glm::vec3& point)=0;
+
+		/**
+		 * \brief returns a vertex on the surface
+		 *
+		 * Note: Test the field value to ensure that it is on the
+		 * surface. This uses a numerical method to determine where the
+		 * surface is, it may not actually be the surface!
+		 *
+		 * \return vertex
+		 */
+		virtual glm::vec3 GetStartVertex()=0;
+
+		/**
+		 * \brief returns the center vertex
+		 *
+		 * This will return (0, 0, 0) for all instances of
+		 * Implicit::Primitive.
+		 */
+		virtual glm::vec3 GetCenterVertex()=0;
+
+		virtual glm::vec3 Normal(const glm::vec3& point)=0;
+
+	protected:
 
 		/**
 		 * \brief Evaluates the field function at a distance
@@ -99,44 +126,6 @@ namespace Implicit
 		 */
 		virtual float Evaluate(float r);
 
-		/**
-		 * \brief Evaluate the surface at a given point
-		 *
-		 * Where this evaluates to 0, the surface is defined
-		 *
-		 * \param point The point to evaluate
-		 */
-		virtual float Evaluate(const glm::vec3& point);
-
-		/**
-		 * \brief Evaluate the field function at a given point
-		 *
-		 * \param point The point to evaluate
-		 */
-		virtual float FieldValue(const glm::vec3& point);
-
-		/**
-		 * \brief returns a vertex on the surface
-		 *
-		 * Note: Test the field value to ensure that it is on the
-		 * surface. This uses a numerical method to determine where the
-		 * surface is, it may not actually be the surface!
-		 *
-		 * \return vertex
-		 */
-		virtual glm::vec3 GetStartVertex();
-
-		/**
-		 * \brief returns the center vertex
-		 *
-		 * This will return (0, 0, 0) for all instances of
-		 * Implicit::Primitive.
-		 */
-		virtual glm::vec3 GetCenterVertex();
-
-		virtual glm::vec3 Normal(const glm::vec3& point);
-
-	protected:
 
 		/**
 		 * \brief Get distance to point
@@ -144,7 +133,12 @@ namespace Implicit
 		 * \param pt The point to get the distance of
 		 * \return The distance from the center to the point
 		 */
-		float getDistance(const glm::vec3& pt);
+		virtual float getDistance(const glm::vec3& pt)=0;
+
+		/**
+		 * \brief Compute the bounding box of the primitive object
+		 */
+		virtual void compute_bounds()=0;
 
 		/**
 		 * \brief Field falloff function of the primitive blob
@@ -155,7 +149,6 @@ namespace Implicit
 		 */
 		float m_radius;
 	private:
-		void compute_bounds();
 	};
 };
 
