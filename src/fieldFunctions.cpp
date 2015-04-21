@@ -10,6 +10,7 @@
 
 float geoffFunction(float r, float R)
 {
+	if (r >= R) return 0;
 	register const float rs = (r * r) / (R * R);
 	register const float rq = rs * rs;
 	register const float rse = rq * rs;
