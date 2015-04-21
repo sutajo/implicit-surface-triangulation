@@ -35,8 +35,11 @@ float Blend::FieldValue(const glm::vec3& point)
 
 glm::vec3 Blend::Normal(const glm::vec3& point)
 {
-	return glm::normalize(m_left_child->Normal(point) +
-			m_right_child->Normal(point));
+	const float right_contrib = m_right_child->FieldValue(point);
+	const float left_contrib = m_left_child->FieldValue(point);
+	return  glm::normalize((right_contrib * m_right_child->Normal(point) +
+				left_contrib * m_left_child->Normal(point))
+			/ (left_contrib + right_contrib));
 }
 
 void Blend::compute_bounds()
