@@ -8,6 +8,11 @@
 
 #include "fieldFunctions.hpp"
 
+float linearFunction(float r, float R)
+{
+	return ((r*r) >= (R*R)) ? 0 : 1 * R - r;
+}
+
 float geoffFunction(float r, float R)
 {
 	if (r >= R) return 0;
@@ -17,8 +22,11 @@ float geoffFunction(float r, float R)
 	return 1 - (4.f/9.f) * rse + (17.f/9.f) * rq - (22.f/9.f) * rs;
 }
 
-float linearFunction(float r, float R)
+float metaballFunction(float r, float R)
 {
-	if (r >= R) return 0;
-	return 1 * (R - r);
+	if (r <= (R / 3.f))
+		return 1 - (3 * (r * r ) / (R * R));
+	else if (r < R)
+		return 1.5 * (1 - r) * (1 - r);
+	else return 0;
 }
