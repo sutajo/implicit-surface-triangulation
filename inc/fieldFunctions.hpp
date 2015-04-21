@@ -13,5 +13,6 @@
 // Outputs are in [0, 1]
 float geoffFunction(float r, float R);
 
+float linearFunction(float r, float R);
 
 #endif // FIELDFUNCTIONS_H

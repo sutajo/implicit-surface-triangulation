@@ -15,3 +15,9 @@ float geoffFunction(float r, float R)
 	register const float rse = rq * rs;
 	return 1 - (4.f/9.f) * rse + (17.f/9.f) * rq - (22.f/9.f) * rs;
 }
+
+float linearFunction(float r, float R)
+{
+	if (r >= R) return 0;
+	return 1 * (R - r);
+}
