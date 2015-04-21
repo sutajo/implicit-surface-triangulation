@@ -30,8 +30,6 @@ float Sphere::FieldValue(const glm::vec3& p)
 	return Primitive::FieldValue(getDistance(p));
 }
 
-
-
 glm::vec3 Sphere::GetStartVertex()
 {
 	return project(glm::vec3(0, 0, 0));
