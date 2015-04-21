@@ -18,7 +18,7 @@
 #include "VecPrint.hpp"
 #endif
 
-#define FIND_ROOT_ITERS 100
+#define FIND_ROOT_ITERS 15
 
 namespace Implicit
 {

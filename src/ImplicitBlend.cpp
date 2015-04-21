@@ -30,7 +30,14 @@ float Blend::Evaluate(const glm::vec3& point)
 float Blend::FieldValue(const glm::vec3& point)
 {
 	if (!m_bounds.contains(point)) return 0;
+
+#ifdef DEBUG
+	const float left_value = m_left_child->FieldValue(point);
+	const float right_value = m_right_child->FieldValue(point);
+	std::cout << "[" << left_value << "," << right_value << "]\t";
+#endif
 	return m_left_child->FieldValue(point) + m_right_child->FieldValue(point);
+
 }
 
 glm::vec3 Blend::Normal(const glm::vec3& point)
