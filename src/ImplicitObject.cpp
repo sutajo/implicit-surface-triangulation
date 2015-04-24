@@ -178,13 +178,16 @@ float Object::findRoot(const glm::vec3& point, glm::vec3 direction, float id)
 	register float xi;
 	register float xi1 = 0;
 	register float xi2 = id;
+
+	register float fxi1 = Evaluate(point + (direction * xi1));
+	register float fxi2 = Evaluate(point + (direction * xi2));
+
 #ifdef DEBUG
 	unsigned int iteration = 0;
 #endif
 	for (unsigned int i = 0; i < FIND_ROOT_ITERS; ++i)
 	{
-		register float fxi1 = Evaluate(point + (direction * xi1));
-		register float fxi2 = Evaluate(point + (direction * xi2));
+
 		xi = xi1 - fxi1 * ((xi1 - xi2)/(fxi1 - fxi2));
 		if (fxi1 == fxi2)
 		{
@@ -195,9 +198,19 @@ float Object::findRoot(const glm::vec3& point, glm::vec3 direction, float id)
 			break;
 		}
 		xi2 = xi1; xi1 = xi;
+		fxi2 = fxi1;
+		fxi1 = Evaluate(point + (direction * xi1));
+		if (f_equ(fxi1, 0))
+		{
+#ifdef DEBUG
+			iteration = i;
+#endif
+			ret_val = xi1;
+			break;
+		}
 	}
 #ifdef DEBUG
-	std::cout << "Iterations: " << iteration << '\n';
+	std::cout << iteration << " iterations ";
 #endif
 	return ret_val;
 }

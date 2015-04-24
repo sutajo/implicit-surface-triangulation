@@ -13,21 +13,13 @@ using namespace Implicit;
 Translate::Translate(Object* child, const glm::vec3& direction) :
 	Transform(child)
 {
-	glm::mat4 translation;
-	translation[3][0] = direction.x;
-	translation[3][1] = direction.y;
-	translation[3][2] = direction.z;
-	setWorldMatrix(translation);
+	setWorldMatrix(glm::translate(glm::mat4(), direction));
 }
 
 Translate::Translate(Object *child, float x, float y, float z) :
 	Transform(child)
 {
-	glm::mat4 translation;
-	translation[3][0] = x;
-	translation[3][1] = y;
-	translation[3][2] = z;
-	setWorldMatrix(translation);
+	setWorldMatrix(glm::translate(glm::mat4(), glm::vec3(x, y, z)));
 }
 
 glm::vec3 Translate::Normal(const glm::vec3& p)
