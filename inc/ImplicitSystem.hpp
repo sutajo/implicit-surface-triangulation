@@ -36,6 +36,7 @@ namespace Implicit {};
 #include "ImplicitUnion.hpp"
 #include "ImplicitBlend.hpp"
 #include "ImplicitIntersect.hpp"
+#include "ImplicitDifference.hpp"
 
 // Unary Operations
 #include "ImplicitTransform.hpp"

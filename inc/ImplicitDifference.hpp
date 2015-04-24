@@ -14,10 +14,29 @@
 
 namespace Implicit
 {
+	/**
+	 * \brief Subtracts one implicit object from another
+	 */
 	class Difference : public Operator
 	{
 	public:
+		/**
+		 * \brief Construct a Difference Object taking the difference
+		 * of the two objects
+		 *
+		 * \param left The object having volume removed
+		 * \param right The object removing the volume
+		 */
 		Difference(Object* left, Object* right);
+
+		/**
+		 * \brief Construct a Difference Object taking the difference
+		 * of the two objects
+		 *
+		 * \param left The object having volume removed
+		 * \param right The object removing the volume
+		 * \param iso The iso value for the operation
+		 */
 		Difference(Object* left, Object* right, float iso);
 
 		virtual float Evaluate(const glm::vec3& point);

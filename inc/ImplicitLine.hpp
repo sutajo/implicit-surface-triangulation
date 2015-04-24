@@ -4,13 +4,58 @@
 #include "ImplicitPrimitive.hpp"
 namespace Implicit
 {
+	/**
+	 * \brief A Line is a straight line with rounded ends
+	 *
+	 * Lines are straight segments of a defined length, with a given
+	 * maximum radius and iso value.
+	 */
 	class Line : public Primitive
 	{
 	public:
+		/**
+		 * \brief Construct a Line Primitive Object
+		 *
+		 * The shape is unit length, centered around local (0, 0, 0),
+		 * with an iso value of 0.5, with a maximum radius 1.
+		 *
+		 * \param f FieldFunction for the shape
+		 */
 		Line(FieldFunction f);
+
+		/**
+		 * \brief Construct a Line Primitive Object
+		 *
+		 * The shape is unit length, centered around local (0, 0, 0).
+		 *
+		 * \param f FieldFunction for the shape
+		 * \param iso The iso value of the shape
+		 */
 		Line(FieldFunction f, float iso);
+
+		/**
+		 * \brief Construct a Line Primitive Object
+		 *
+		 * The shape is unit length, centered around local (0, 0, 0).
+		 *
+		 * \param f FieldFunction for the shape
+		 * \param iso The iso value of the shape
+		 * \param radius The defined maximum radius of the shape
+		 */
 		Line(FieldFunction f, float iso, float radius);
+
+		/**
+		 * \brief Construct a Line Primitive Object
+		 *
+		 * The line is centered around the local coordinate (0, 0, 0).
+		 * 		 *
+		 * \param f FieldFunction for the shape
+		 * \param iso The iso value of the shape
+		 * \param radius The defined maximum radius of the shape
+		 * \param length The lenght of the line
+		 */
 		Line(FieldFunction f, float iso, float radius, float length);
+
 
 		/**
 		 * \brief Evaluate the surface at a given point

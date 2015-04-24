@@ -5,12 +5,43 @@
 
 namespace Implicit
 {
-
+	/**
+	 * \brief primitive sphere object
+	 */
 	class Sphere : public Primitive
 	{
 	public:
+		/**
+		 * \brief Create new Sphere Primitive
+		 *
+		 * Creates a default Sphere with a field function
+		 * The default iso value is 0.5
+		 * The default radius is 1
+		 *
+		 * \param f The FieldFunction for the Sphere
+		 */
 		Sphere(FieldFunction f);
+
+		/**
+		 * \brief Create new Sphere Primitive
+		 *
+		 * Creates a Sphere with a defined iso value
+		 * The default radius is 1
+		 * \param f The FieldFunction for the Sphere
+		 * \param iso The iso value where the function is defined
+		 */
 		Sphere(FieldFunction f, float iso);
+
+		/**
+		 * \brief Create new Sphere Primitive
+		 *
+		 * Creates a new Sphere with a defined FieldFunction, iso
+		 * value and radius.
+		 *
+		 * \param f The FieldFunction for the Sphere
+		 * \param iso The iso value where the surface is defined
+		 * \param radius The radius of the object
+		 */
 		Sphere(FieldFunction f, float iso, float radius);
 
 		/**

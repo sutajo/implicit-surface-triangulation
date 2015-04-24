@@ -156,8 +156,13 @@ namespace Implicit
 		 * Surfaces Page 3
 		 *
 		 * \param pt The point to find the curvature at
+		 * \param k1 The k1 principal curvature --Written by the
+		 * method call
+		 * \param k2 The k2 principal curvature -- Written by the
+		 * method call
 		 *
 		 */
+		// TODO: See which of k1 k2 is along tangent and bi-normal
 		void Curvature(const glm::vec3& pt, float& k1, float& k2);
 
 
@@ -180,7 +185,7 @@ namespace Implicit
 
 	protected:
 		/**
-		 * \brief gets god deltas for minimizing roundoff error
+		 * \brief gets good deltas for minimizing roundoff error
 		 * Used for numerical differentiation
 		 * \param dx Where to store delta x
 		 * \param dy where to store delta y
@@ -212,7 +217,10 @@ namespace Implicit
 		 * Uses secant method to perform root finding
 		 * Finds the surface of the object
 		 *
+		 * \param point Origin of the ray being solved
 		 * \param direction The direction to find the value
+		 * \param initial_distance A guess distance for the first
+		 * iteration of the method. Default = 1
 		 * \return The distance along the direction to move to
 		 * intersect the surface
 		 */
@@ -225,7 +233,7 @@ namespace Implicit
 		 *
 		 * \param N The normal vector to find tangent space of
 		 * \param T Where the tangent will be stored
-		 * \param B Where the binormal will be stored
+		 * \param B Where the bi-normal will be stored
 		 */
 		void getTangentSpace(const glm::vec3& N, glm::vec3& T,
 				glm::vec3& B) const;
@@ -239,7 +247,7 @@ namespace Implicit
 		/**
 		 * \brief projects a vertex onto the surface
 		 * \param pt The point to be projected
-		 * \para direction the director to project in
+		 * \param direction the direction to project in
 		 */
 		glm::vec3 project(const glm::vec3& pt, glm::vec3 direction);
 
@@ -248,7 +256,14 @@ namespace Implicit
 		 */
 		float m_iso;
 
-		// Bounding box
+		/**
+		 * \brief Bounding box of the underlying shape
+		 *
+		 * This is a loose estimate of the volume of the shape
+		 * The bounding box forms a box around the maximum radius of
+		 * the object, not necessarily the volume represented by the
+		 * iso value.
+		 */
 		Aabb m_bounds;
 	private:
 

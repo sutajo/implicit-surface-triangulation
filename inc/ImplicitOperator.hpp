@@ -13,6 +13,9 @@
 
 namespace Implicit
 {
+	/**
+	 * \brief Binary operations performed on two simpler implicit objects
+	 */
 	class Operator : public Object
 	{
 	public:
@@ -39,7 +42,19 @@ namespace Implicit
 		virtual glm::vec3 GetStartVertex();
 		virtual glm::vec3 GetCenterVertex();
 	protected:
+		/**
+		 * \brief Left child object
+		 *
+		 * This is one of the objects having the operation performed on
+		 * it.
+		 */
 		Object* m_left_child;
+		/**
+		 * \brief Right child object
+		 *
+		 * This is one of the objects having the operation performed on
+		 * it.
+		 */
 		Object* m_right_child;
 	private:
 	};

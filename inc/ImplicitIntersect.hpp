@@ -13,6 +13,9 @@
 
 namespace Implicit
 {
+	/**
+	 * \brief Gets the shape of the intersection of two implicit Objects
+	 */
 	class Intersect : public Operator
 	{
 	public:

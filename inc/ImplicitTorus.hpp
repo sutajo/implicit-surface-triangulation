@@ -5,11 +5,47 @@
 
 namespace Implicit
 {
+	/**
+	 * \brief Implicitly defined torus primitive object
+	 */
 	class Torus : public Primitive
 	{
 	public:
+		/**
+		 * \brief Construct a Torus Primitive Object
+		 *
+		 * Constructs a torus which sits on the xy plane.
+		 * Defaults:
+		 * 	Outer radius: 0.6
+		 * 	Inner radius: 0.5
+		 * 	iso Value: 0.5
+		 * \param f Field Function
+		 */
 		Torus(FieldFunction f);
+
+		/**
+		 * \brief Construct a Torus Primitive Object
+		 *
+		 * Constructs a torus which sits on the xy plane.
+		 * Defaults:
+		 * 	Outer radius: 0.6
+		 * 	Inner radius: 0.5
+		 * \param f Field Function
+		 * \param iso The iso value
+		 */
 		Torus(FieldFunction f, float iso);
+
+		/**
+		 * \brief Construct a Torus Primitive Object
+		 *
+		 * Constructs a torus which sits on the xy plane.
+		 * \param f Field Function
+		 * \param iso The iso value
+		 * \param inner_radius The smaller radius on the inside of the
+		 * torus
+		 * \param outer_radius The larger radius on the outside of the
+		 * torus
+		 */
 		Torus(FieldFunction f, float iso, float inner_radius, float outer_radius);
 
 		virtual float Evaluate(const glm::vec3& point);

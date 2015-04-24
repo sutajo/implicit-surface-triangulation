@@ -106,7 +106,18 @@ public:
 	bool intersect(const glm::vec3& origin, const glm::vec3& direction, glm::vec3& hit_point);
 
 
+	/**
+	 * \brief Returns the minimum bounding coordinate
+	 *
+	 * \return Minimum bounding coordinate in 3D space
+	 */
 	const glm::vec3& min() const;
+
+	/**
+	 * \brief Returns the maximum bounding coordinate
+	 *
+	 * \return Maximum bounding coordinate in 3D space
+	 */
 	const glm::vec3& max() const;
 
 private:

@@ -12,6 +12,9 @@
 
 namespace Implicit
 {
+	/**
+	 * \brief Scales the implicit object represented by the child
+	 */
 	class Scale : public Transform
 	{
 	public:

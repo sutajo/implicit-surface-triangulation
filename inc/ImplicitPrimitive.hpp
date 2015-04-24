@@ -22,7 +22,18 @@ namespace Implicit
 
 	// First float is the current radius, second float is max radius of
 	// function
-	typedef float(*FieldFunction)(float, float);
+	/**
+	 * \brief Field functions determine how the blob interacts with other
+	 * blobs
+	 *
+	 * This function is evaluated at a distance r, and a maximum distance
+	 * R. If r exceeds the maximum distance R, then the function should
+	 * evaluate to 0.
+	 *
+	 * \param r distance from skeleton of the primitive
+	 * \param R maximum distance from skeleton
+	 */
+	typedef float(*FieldFunction)(float r, float R);
 
 	/**
 	 * \brief A blob with a defined field function and iso value

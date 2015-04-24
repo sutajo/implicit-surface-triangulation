@@ -14,6 +14,11 @@
 
 namespace Implicit
 {
+	/**
+	 * \brief Unions two objects together
+	 *
+	 * The field functions do not effect each-other.
+	 */
 	class Union : public Operator
 	{
 	public:
