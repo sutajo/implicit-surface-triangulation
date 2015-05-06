@@ -10,7 +10,29 @@ and at some max radius, will have a value of 0.
 
 Jim Blinn origianlly used Blobs, or "Blobby Molecules" to model electron density fields.
 
-Since then they have evolved to handle other more complex geometries.
+Since then they have evolved to handle other more complex geometries, including the concept of skeletal shapes, which allow the definition of the blob to come from the definition of a skeleton. This is useful for creating more primitive objects, such as a line or a torus. 
+
+## Features
+- Axis-aligned Bounding Box Bounding Volume Hierarchies
+- Multiple Primitive types
+  - Sphere
+  - Torus
+  - Line
+- Multiple Field Falloff Functions
+  - Linear Function
+  - Geoff Function (Soft Objects)
+  - Metaball Function
+- Four operations
+  - Blend
+  - Difference
+  - Intersect
+  - Union
+- Three transformations
+  - Translate
+  - Rotate
+  - Scale
+- Curvature Calculations
+- Normal Calculations
 
 ## Building The Blob Tree
 ### Requirements
@@ -52,7 +74,9 @@ itself.
 - Assume all branches off of `dev` to be experimental and don't work.
 
 ### Naming Scheme
-We will begin using the standard version scheme of major.minor.build
-- major number will be incremented any time there is a public api-breaking change
-- minor number will be incremented with every major change to the system
-- build will be one of 0: alpha, 1: beta, 2: release
+We will begin using the standard version scheme of major.minor.bug
+- major number will be updated any time 
+- minor number will be incremented any time there is a public api-breaking change
+- bug number will be incremented with immediate bug fixes
+
+The bug number will most likely remain zero, as most development will occur in the `dev` branch. Changes to the `dev` branch will not be counted toward the bug number, and will only be incremented if an immediate bug needs to be attended to directly in the master branch.
