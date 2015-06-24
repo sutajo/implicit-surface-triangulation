@@ -1,3 +1,11 @@
+/*
+ * Aabb
+ *
+ * File: Aabb.cpp
+ * Auth: Evan Wilde					<etcwilde@uvic.ca>
+ * Date: Mar 22 2015
+ */
+
 #include "Aabb.hpp"
 
 
@@ -128,11 +136,43 @@ const glm::vec3& Aabb::max() const
 	return bounds[1];
 }
 
+#define XZ 0b00000001
+#define XY 0b00000010
+#define YZ 0b00000100
+Aabb::Axis Aabb::majorAxis() const
+{
+	register unsigned char result = 0;
+	const glm::vec3 m = bounds[1] - bounds[0];
+	(m.x > m.z) && (result |= XZ);
+	(m.y > m.z) && (result |= YZ);
+	(m.x > m.y) && (result |= XY);
+	return (result & XZ) ?
+		((result & XY) ? Axis::X : Axis::Y) :
+		((result & YZ) ? Axis::Y : Axis::Z);
+}
+
+Aabb::Axis Aabb::minorAxis() const
+{
+	register unsigned char result = 0;
+	const glm::vec3 m = bounds[1] - bounds[0];
+	(m.x < m.z) && (result |= XZ);
+	(m.y < m.z) && (result |= YZ);
+	(m.x < m.y) && (result |= XY);
+	return (result & XZ) ?
+		((result & XY) ? Axis::X : Axis::Y) :
+		((result & YZ) ? Axis::Y : Axis::Z);
+}
+
+#undef XZ
+#undef YX
+#undef YZ
+
 
 unsigned int Aabb::hash_ray(const Aabb::AABB_RAY& R)
 {
 	return hash_ray(R.origin, R.direction);
 }
+
 unsigned int Aabb::hash_ray(const glm::vec3& origin, const glm::vec3& direction)
 {
 	std::hash<float> hash_float;
@@ -182,9 +222,6 @@ unsigned int Aabb::hash_ray(const glm::vec3& origin, const glm::vec3& direction)
 /**
  * http://www.cs.utah.edu/~awilliam/box/box.pdf
  */
-#define RIGHT 0
-#define LEFT 1
-#define MIDDLE 2
 bool Aabb::intersect(const glm::vec3& origin, const glm::vec3& direction,
 		glm::vec3& hit_point)
 {
@@ -198,7 +235,8 @@ bool Aabb::intersect(const glm::vec3& origin, const glm::vec3& direction,
 	cr.origin.z == origin.z &&
 	cr.direction.x == direction.x &&
 	cr.direction.y == direction.y &&
-	cr.direction.z == direction.z) r = cr;
+	cr.direction.z == direction.z)
+		r = cr;
 	else
 	{
 		r = AABB_RAY(origin, direction);

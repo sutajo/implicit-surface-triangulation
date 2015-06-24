@@ -1,3 +1,11 @@
+/*
+ * Aabb
+ *
+ * File: Aabb.hpp
+ * Auth: Evan Wilde					<etcwilde@uvic.ca>
+ * Date: Mar 22 2015
+ */
+
 #ifndef AABB_HPP
 #define AABB_HPP
 
@@ -9,12 +17,11 @@
 #include <list>
 #include <functional>
 
-#include <glm/glm.hpp> 
+#include <glm/glm.hpp>
 #include <string.h>
 
 #include <iostream>
-
-
+#include "VecPrint.hpp"
 
 /**
  * AABB -- Axis-aligned bounding box
@@ -24,6 +31,14 @@ class Aabb
 {
 
 public:
+	enum Axis
+	{
+		X,
+		Y,
+		Z
+	};
+
+
 	Aabb() { reset(); }
 
 	/**
@@ -42,10 +57,10 @@ public:
 	 */
 	void compute(const std::vector<glm::vec3>& verts);
 
-
 	/**
 	 * generates the AABB over a list of vertices
-	 * Overwrites current AABB */ void compute(std::list<glm::vec3>& verts);
+	 * Overwrites current AABB */
+	void compute(std::list<glm::vec3>& verts);
 
 	/**
 	 * Union this AABB with another AABB
@@ -91,6 +106,7 @@ public:
 	bool contains(const glm::vec3& point) const;
 
 
+
 	/**
 	 * \brief Determines if a ray intersects the AABB
 	 *
@@ -119,6 +135,10 @@ public:
 	 * \return Maximum bounding coordinate in 3D space
 	 */
 	const glm::vec3& max() const;
+
+	Aabb::Axis majorAxis() const;
+
+	Aabb::Axis minorAxis() const;
 
 private:
 	class AABB_RAY
