@@ -1,0 +1,32 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C/C++: g++ Aktive Datei kompilieren",
+            "command": "make",
+            "args": [],
+            "options": {
+                "cwd": "${fileDirname}/build"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Vom Debugger generierte Aufgabe."
+        },
+        {
+            "type": "shell",
+            "label": "updatelibs",
+            "command": "git pull",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}/autodiff"
+            },
+            "detail": "Update TL compiler infrastructure"
+        }
+    ],
+    "version": "2.0.0"
+}
