@@ -4,8 +4,9 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/home/tamas/Documents/diplomamunka/libtriangulate/nanoflann/include",
-                "/home/tamas/Documents/diplomamunka/libtriangulate/autodiff"
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/autodiff",
+                "${workspaceFolder}/libgeom"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
