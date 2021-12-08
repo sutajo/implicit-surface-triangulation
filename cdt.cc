@@ -164,7 +164,6 @@ CheckNeighbourTriangles(
             //  - a háromszög egyik csúcsa a kiterjesztett él egyik csúcsa és
             //  - az új csúcs közel van a háromszög egyik csúcsához
 
-            /*
             if (contains_to || contains_from)
             {
                 auto vertexIter = face.vertices().begin();
@@ -186,7 +185,6 @@ CheckNeighbourTriangles(
                     return UseExistingVertices{{to_vertex, from_vertex, *vertexIter}, longestSide, oppositeEdge};
                 }
             }
-            */
 
             const auto FaceVertices = face.vertices().to_array<3>();
 
@@ -485,6 +483,7 @@ CurvatureDependentTriangulation::Tessellate(
     const auto B = ProjectPointToSurface(ScalarFunction, IsoLevel, SurfacePoint + Tangent * StartingTriangleSide);
     const auto Axis = A - B;
     const auto AxisLen = Axis.norm();
+    //assert_near(StartingTriangleSide, AxisLen, 1e-3);
     const auto MidPoint = (A + B) / 2.0;
     const auto TriangleTangent = GradientAt(ScalarFunction, MidPoint).normalized() * Axis.norm() * l;
     auto BestError = numeric_limits<double>::max();

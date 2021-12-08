@@ -11,10 +11,10 @@ int main()
         [](const dual &x, const dual &y, const dual &z) -> dual
         { return x * x + y * y + z * z; },
         {Vector3D(-10, -10, -10), Vector3D(10, 10, 10)},
-        2,
+        1,
         1,
         Vector3D(0, 0, 0),
-        Vector3D(0, 0, 3));
+        Vector3D(0, 0, 2));
 
     /*
     auto mesh = CurvatureDependentTriangulation::Tessellate(
