@@ -206,6 +206,47 @@ CheckNeighbourTriangles(
     return AddNewVertex{longestSide};
 }
 
+//
+// - Fül levágás https://www.geometrictools.com/Documentation/TriangulationByEarClipping.pdf
+// Vége, ha nem végezhető több művelet egyik listában lévő élen se
+// Reprezentáció: csúcsokat tartalmazó vektor, él: indexpár
+// Akkor alkalmazandó, amikor két szomszédos él külső szöge kisebb mint 70 fok
+// A két él csúcsai egy új háromszöget definiálnak. A 70 fok nem tudományos úton jött ki, egyszerű heurisztika,
+// hogy egyenlő oldalú háromszögeken kívül más háromszögek is létrejöhessenek.
+//
+static bool
+EarCutting(const GrowingState &state)
+{
+    bool OperationTookPlace = false;
+
+    auto initHalfEdge = state.mesh.halfedge_handle(0);
+    if (!state.mesh.is_boundary(initHalfEdge))
+    {
+        initHalfEdge = state.mesh.opposite_halfedge_handle(initHalfEdge);
+    }
+
+    auto halfedge = initHalfEdge;
+
+    std::set<OpenMesh::VertexHandle> verticesForDeletion;
+
+    do
+    {
+        const auto angle = state.mesh.calc_sector_angle(halfedge) * 180.0 / M_PI;
+        spdlog::info("Sector angle: {} degrees", angle);
+
+        if (angle > 110.0) // A külső szög kisebb mint 70 fok
+        {
+            const auto vertexToDelete = state.mesh.to_vertex_handle(halfedge);
+            spdlog::info("Ear cutting: Deleting vertex {}", vertexToDelete.idx());
+            state.mesh.delete_vertex(vertexToDelete);
+        }
+
+        halfedge = state.mesh.next_halfedge_handle(halfedge);
+    } while (initHalfEdge != halfedge);
+
+    return OperationTookPlace;
+}
+
 static bool
 IsoscelesTriangleGrowing(
     function<dual(
@@ -237,7 +278,7 @@ IsoscelesTriangleGrowing(
 
     for (auto edge = state.mesh.edges_begin(); edge != state.mesh.edges_end(); ++edge)
     {
-        //GrowingMeshToTrimesh(state.mesh).writeOBJ("testmesh.obj");
+        // GrowingMeshToTrimesh(state.mesh).writeOBJ("testmesh.obj");
         for (auto &edge : state.mesh.edges())
             spdlog::debug("Edge({}): {}<->{}", edge.idx(), edge.v0().idx(), edge.v1().idx());
         spdlog::debug("---------");
@@ -357,83 +398,13 @@ IsoscelesTriangleGrowing(
                 state.longestSidedTriangle.longestSide = longestSide;
                 state.longestSidedTriangle.FaceHandle = newFaceHandle;
             }
+
+            EarCutting(state);
         }
     }
 
     return success;
 }
-
-/*
-//
-// - Fül levágás https://www.geometrictools.com/Documentation/TriangulationByEarClipping.pdf
-// Vége, ha nem végezhető több művelet egyik listában lévő élen se
-// Reprezentáció: csúcsokat tartalmazó vektor, él: indexpár
-// Akkor alkalmazandó, amikor két szomszédos él külső szöge kisebb mint 70 fok
-// A két él csúcsai egy új háromszöget definiálnak. A 70 fok nem tudományos úton jött ki, egyszerű heurisztika,
-// hogy egyenlő oldalú háromszögeken kívül más háromszögek is létrejöhessenek.
-//
-static bool
-EarCutting(const GrowingState &state)
-{
-    bool OperationTookPlace = false;
-
-    vector<GrowingTriangle> NewEdges;
-    for (auto &edge_mapping : state.edges)
-    {
-        auto &edges = edge_mapping.second;
-        for (auto e_it = edges.begin(); e_it != edges.end(); ++e_it)
-        {
-            for (auto a_it = std::next(e_it); a_it != edges.end(); ++a_it)
-            {
-                GrowingTriangle e1 = *e_it;
-                GrowingTriangle e2 = *a_it;
-
-                if (e1.v == e2.u || e1.u == e2.v)
-                {
-                    std::swap(e2.u, e2.v);
-                }
-
-                const Vector3D &A = state.points.at(e1.u);
-                const Vector3D &B = state.points.at(e1.v);
-
-                const Vector3D &C = state.points.at(e2.u);
-                const Vector3D &D = state.points.at(e2.v);
-
-                Vector3D DV1 = B - A;
-                Vector3D DV2 = D - C;
-                if (e1.v == e2.v)
-                {
-                    DV1 *= -1.0;
-                    DV2 *= -1.0;
-                }
-
-                const bool needsCut = AngleIsGEThan(DV1, DV2, M_PI * 110.0 / 180.0);
-
-                if (needsCut)
-                {
-                    //NewEdges.push_back(GrowingTriangle{e1.v, e2.v, e1.q, false});
-
-                    const size_t indexA = a_it - edges.begin();
-
-                    e_it = edges.erase(e_it);
-                    a_it = std::next(e_it, indexA);
-
-                    state.kdtree.buildIndex();
-                }
-
-                OperationTookPlace = OperationTookPlace || needsCut;
-            }
-        }
-    }
-
-    for (const auto &edge : NewEdges)
-    {
-        AddEdge(state.edges, edge);
-    }
-
-    return OperationTookPlace;
-}
-*/
 
 Geometry::TriMesh
 CurvatureDependentTriangulation::Tessellate(
@@ -483,7 +454,7 @@ CurvatureDependentTriangulation::Tessellate(
     const auto B = ProjectPointToSurface(ScalarFunction, IsoLevel, SurfacePoint + Tangent * StartingTriangleSide);
     const auto Axis = A - B;
     const auto AxisLen = Axis.norm();
-    //assert_near(StartingTriangleSide, AxisLen, 1e-3);
+    // assert_near(StartingTriangleSide, AxisLen, 1e-3);
     const auto MidPoint = (A + B) / 2.0;
     const auto TriangleTangent = GradientAt(ScalarFunction, MidPoint).normalized() * Axis.norm() * l;
     auto BestError = numeric_limits<double>::max();
@@ -516,8 +487,8 @@ CurvatureDependentTriangulation::Tessellate(
     spdlog::info("Starting triangle computed.\nPoints: ({},{},{})\nSides: ({:.5f},{:.5f},{:.5f})", A, B, C, dab, dbc, dac);
     assert(BestError < 0.5e-2);
     assert_near(dab, AxisLen, 1e-3);
-    assert_near(dbc, AxisLen, 1e-3);
-    assert_near(dac, AxisLen, 1e-3);
+    // assert_near(dbc, AxisLen, 1e-3);
+    // assert_near(dac, AxisLen, 1e-3);
 
     // 2. Kiindulási állapot létrehozása
     const auto FirstFace = Mesh.add_face(Mesh.add_vertex(A), Mesh.add_vertex(B), Mesh.add_vertex(C));
@@ -538,7 +509,7 @@ CurvatureDependentTriangulation::Tessellate(
         OperationTookPlace = false;
 
         OperationTookPlace = IsoscelesTriangleGrowing(ScalarFunction, IsoLevel, Rho, growingState, BoundingBox) || OperationTookPlace;
-        //OperationTookPlace = EarCutting(growingState) || OperationTookPlace;
+        // OperationTookPlace = EarCutting(growingState) || OperationTookPlace;
     }
 
     // 4. Kitöltési folyamat:

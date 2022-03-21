@@ -1,5 +1,6 @@
 #include <math.h>
-
+#include <filesystem>
+#include <spdlog/spdlog.h>
 #include "cdt.hh"
 
 using namespace ImplicitTriangulation;
@@ -27,9 +28,11 @@ int main()
         Vector3D(0, 0, 0),
         Vector3D(0, 0, 2)); */
 
-    mesh.writeOBJ("testmesh.obj");
+    const std::string meshOutPath = std::filesystem::current_path() / "testmesh.obj";
+    spdlog::info("Writing mesh to {}", meshOutPath);
+    mesh.writeOBJ(meshOutPath);
 
-    /* 
+    /*
     Vector3D point = CurvatureDependentTriangulation::ProjectPointToSurface([](const dual &x, const dual &y, const dual &z) -> dual
                                                                             { return x * x + y * y + z * z; },
                                                                             1, Vector3D(3, 5, 20));
