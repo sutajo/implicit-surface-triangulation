@@ -124,68 +124,6 @@ CheckNeighbourTriangles(
         for (const auto &face :
              state.mesh.vf_range(OpenMesh::VertexHandle(match.first)))
         {
-            const auto from_vertex = state.mesh.from_vertex_handle(state.mesh.halfedge_handle(grownEdge, 0));
-            const auto to_vertex = state.mesh.to_vertex_handle(state.mesh.halfedge_handle(grownEdge, 0));
-
-            const auto face_contains = [&](const OpenMesh::VertexHandle &vertex, const OpenMesh::SmartFaceHandle &face) -> bool
-            {
-                return face.vertices().any_of([&](const OpenMesh::VertexHandle &v)
-                                              { return v == vertex; });
-            };
-
-            const auto edge_contains = [&](const OpenMesh::VertexHandle &vertex, const OpenMesh::SmartEdgeHandle &edge) -> bool
-            {
-                return face.edges().any_of([&](const OpenMesh::SmartEdgeHandle &e)
-                                           { return e.v0() == vertex || e.v1() == vertex; });
-            };
-
-            // A háromszög tartalmazza a növelési él egyik csúcsát
-            const auto contains_to = face_contains(to_vertex, face);
-            // A háromszög tartalmazza a növelési él másik csúcsát
-            const auto contains_from = face_contains(from_vertex, face);
-
-            // Ez azt jelenti, hogy a növeléshez használt élt tartalmazza a háromszög, átugorhatjuk,
-            // mert ha ilyen esetekben is vizsgálnánk a közelséget, akkor ilyen háló nem alakulhatnak ki:
-            //                ______
-            //              /\     /
-            //             /  \   /
-            //            /____\ /
-            //
-            if (contains_to && contains_from)
-                continue;
-
-            // Speciális eset:
-            //   _______C
-            //   \     / \
-            //    \   /   \ Kiterjesztett él
-            //     \ /     \
-            //      P
-            // Ha:
-            //  - a háromszög egyik csúcsa a kiterjesztett él egyik csúcsa és
-            //  - az új csúcs közel van a háromszög egyik csúcsához
-
-            if (contains_to || contains_from)
-            {
-                auto vertexIter = face.vertices().begin();
-                for (; vertexIter != face.vertices().end(); ++vertexIter)
-                {
-                    // Meglévő háromszög pont és az új pont távolsága
-                    const auto d = (state.mesh.point(*vertexIter) - newTriangle.back()).norm();
-                    if (d < 0.65e-2)
-                        break;
-                }
-                const auto CanUseExistingVertices = vertexIter != face.vertices().end();
-                if (CanUseExistingVertices)
-                {
-                    const auto commonVertex = contains_to ? to_vertex : from_vertex;
-                    const auto heh = state.mesh.find_halfedge(commonVertex, *vertexIter);
-                    assert(heh.is_valid());
-                    OpenMesh::SmartEdgeHandle oppositeEdge = state.mesh.edge_handle(heh);
-                    assert(oppositeEdge.is_valid());
-                    return UseExistingVertices{{to_vertex, from_vertex, *vertexIter}, longestSide, oppositeEdge};
-                }
-            }
-
             const auto FaceVertices = face.vertices().to_array<3>();
 
             const auto A = state.mesh.point(FaceVertices[0]);
@@ -236,6 +174,7 @@ EarCutting(const GrowingState &state)
 
         if (angle > 110.0) // A külső szög kisebb mint 70 fok
         {
+            OperationTookPlace = true;
             const auto vertexToDelete = state.mesh.to_vertex_handle(halfedge);
             spdlog::info("Ear cutting: Deleting vertex {}", vertexToDelete.idx());
             state.mesh.delete_vertex(vertexToDelete);
@@ -509,7 +448,7 @@ CurvatureDependentTriangulation::Tessellate(
         OperationTookPlace = false;
 
         OperationTookPlace = IsoscelesTriangleGrowing(ScalarFunction, IsoLevel, Rho, growingState, BoundingBox) || OperationTookPlace;
-        // OperationTookPlace = EarCutting(growingState) || OperationTookPlace;
+        OperationTookPlace = EarCutting(growingState) || OperationTookPlace;
     }
 
     // 4. Kitöltési folyamat:
