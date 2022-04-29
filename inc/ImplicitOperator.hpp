@@ -34,13 +34,13 @@ namespace Implicit
 		 * \param right Address of Object on right side
 		 * \param iso Iso value where surface exists
 		 */
-		Operator(Object* left, Object* right, float iso);
+		Operator(Object* left, Object* right, double iso);
 
-		virtual float Evaluate(const glm::vec3& point)=0;
-		virtual float FieldValue(const glm::vec3& point)=0;
-		virtual glm::vec3 Normal(const glm::vec3& point)=0;
-		virtual glm::vec3 GetStartVertex();
-		virtual glm::vec3 GetCenterVertex();
+		virtual double Evaluate(const glm::dvec3& point)=0;
+		virtual double FieldValue(const glm::dvec3& point)=0;
+		virtual glm::dvec3 Normal(const glm::dvec3& point)=0;
+		virtual glm::dvec3 GetStartVertex();
+		virtual glm::dvec3 GetCenterVertex();
 	protected:
 		/**
 		 * \brief Left child object

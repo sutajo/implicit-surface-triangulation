@@ -32,13 +32,13 @@ namespace Implicit
 		 * \brief Constructs a Transform Object
 		 *
 		 */
-		Transform(Object* child, const glm::mat4& m);
+		Transform(Object* child, const glm::dmat4& m);
 
-		virtual float Evaluate(const glm::vec3& point);
-		virtual float FieldValue(const glm::vec3& point);
-		virtual glm::vec3 Normal(const glm::vec3& point)=0;
-		virtual glm::vec3 GetStartVertex();
-		virtual glm::vec3 GetCenterVertex();
+		virtual double Evaluate(const glm::dvec3& point);
+		virtual double FieldValue(const glm::dvec3& point);
+		virtual glm::dvec3 Normal(const glm::dvec3& point)=0;
+		virtual glm::dvec3 GetStartVertex();
+		virtual glm::dvec3 GetCenterVertex();
 	protected:
 
 		/**
@@ -54,7 +54,7 @@ namespace Implicit
 		/**
 		 * \brief Sets the m_to_local and m_from_local matrix
 		 */
-		void setWorldMatrix(const glm::mat4& m);
+		void setWorldMatrix(const glm::dmat4& m);
 
 		/**
 		 * \brief The address of the child object
@@ -64,16 +64,16 @@ namespace Implicit
 		/**
 		 * \brief Maps points from the world space to the local space
 		 */
-		glm::vec3 map_to(glm::vec3 world_point);
+		glm::dvec3 map_to(glm::dvec3 world_point);
 
 		/**
 		 * \brief Maps points from the local space to the world space
 		 */
-		glm::vec3 map_from(glm::vec3 local_point);
+		glm::dvec3 map_from(glm::dvec3 local_point);
 
 	private:
-		glm::mat4 m_to_local;
-		glm::mat4 m_from_local;
+		glm::dmat4 m_to_local;
+		glm::dmat4 m_from_local;
 	};
 };
 

@@ -16,18 +16,18 @@ Blend::Blend(Object* left, Object* right) :
 	compute_bounds();
 }
 
-Blend::Blend(Object* left, Object* right, float iso) :
+Blend::Blend(Object* left, Object* right, double iso) :
 	Operator(left, right, iso)
 {
 	compute_bounds();
 }
 
-float Blend::Evaluate(const glm::vec3& point)
+double Blend::Evaluate(const glm::dvec3& point)
 {
 	return FieldValue(point) - m_iso;
 }
 
-float Blend::FieldValue(const glm::vec3& point)
+double Blend::FieldValue(const glm::dvec3& point)
 {
 	if (!m_bounds.contains(point)) return 0;
 
@@ -40,10 +40,10 @@ float Blend::FieldValue(const glm::vec3& point)
 
 }
 
-glm::vec3 Blend::Normal(const glm::vec3& point)
+glm::dvec3 Blend::Normal(const glm::dvec3& point)
 {
-	const float right_contrib = m_right_child->FieldValue(point);
-	const float left_contrib = m_left_child->FieldValue(point);
+	const double right_contrib = m_right_child->FieldValue(point);
+	const double left_contrib = m_left_child->FieldValue(point);
 	return  glm::normalize((right_contrib * m_right_child->Normal(point) +
 				left_contrib * m_left_child->Normal(point))
 			/ (left_contrib + right_contrib));

@@ -32,12 +32,12 @@ namespace Implicit
 		 * \brief Constructs a Union Object
 		 * Sets the iso value to iso
 		 */
-		Union(Object* left, Object* right, float iso);
+		Union(Object* left, Object* right, double iso);
 
-		virtual float Evaluate(const glm::vec3& point);
-		virtual float FieldValue(const glm::vec3& point);
+		virtual double Evaluate(const glm::dvec3& point);
+		virtual double FieldValue(const glm::dvec3& point);
 
-		virtual glm::vec3 Normal(const glm::vec3& point);
+		virtual glm::dvec3 Normal(const glm::dvec3& point);
 	private:
 		void compute_bounds();
 

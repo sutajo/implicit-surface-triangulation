@@ -17,14 +17,14 @@ Primitive::Primitive(FieldFunction f) :
 {
 }
 
-Primitive::Primitive(FieldFunction f, float iso) :
+Primitive::Primitive(FieldFunction f, double iso) :
 	Object(iso),
 	m_fieldFunction(f),
 	m_radius(1)
 {
 }
 
-Primitive::Primitive(FieldFunction f, float iso, float radius) :
+Primitive::Primitive(FieldFunction f, double iso, double radius) :
 	Object(iso),
 	m_fieldFunction(f),
 	m_radius(radius)
@@ -32,12 +32,12 @@ Primitive::Primitive(FieldFunction f, float iso, float radius) :
 }
 
 
-float Primitive::FieldValue(float r)
+double Primitive::FieldValue(double r)
 {
 	return m_fieldFunction(r, m_radius);
 }
 
-float Primitive::Evaluate(float r)
+double Primitive::Evaluate(double r)
 {
 	return FieldValue(r) - m_iso;
 }

@@ -30,7 +30,7 @@ namespace Implicit
 		 * \param f The FieldFunction for the Sphere
 		 * \param iso The iso value where the function is defined
 		 */
-		Sphere(FieldFunction f, float iso);
+		Sphere(FieldFunction f, double iso);
 
 		/**
 		 * \brief Create new Sphere Primitive
@@ -42,7 +42,7 @@ namespace Implicit
 		 * \param iso The iso value where the surface is defined
 		 * \param radius The radius of the object
 		 */
-		Sphere(FieldFunction f, float iso, float radius);
+		Sphere(FieldFunction f, double iso, double radius);
 
 		/**
 		 * \brief Evaluate the surface at a given point
@@ -51,14 +51,14 @@ namespace Implicit
 		 *
 		 * \param point The point to evaluate
 		 */
-		virtual float Evaluate(const glm::vec3& point);
+		virtual double Evaluate(const glm::dvec3& point);
 
 		/**
 		 * \brief Evaluate the field function at a given point
 		 *
 		 * \param point The point to evaluate
 		 */
-		virtual float FieldValue(const glm::vec3& point);
+		virtual double FieldValue(const glm::dvec3& point);
 
 		/**
 		 * \brief returns a vertex on the surface
@@ -69,7 +69,7 @@ namespace Implicit
 		 *
 		 * \return vertex
 		 */
-		virtual glm::vec3 GetStartVertex();
+		virtual glm::dvec3 GetStartVertex();
 
 		/**
 		 * \brief returns the center vertex
@@ -77,9 +77,9 @@ namespace Implicit
 		 * This will return (0, 0, 0) for all instances of
 		 * Implicit::Primitive.
 		 */
-		virtual glm::vec3 GetCenterVertex();
+		virtual glm::dvec3 GetCenterVertex();
 
-		virtual glm::vec3 Normal(const glm::vec3& point);
+		virtual glm::dvec3 Normal(const glm::dvec3& point);
 
 	protected:
 		/**
@@ -88,7 +88,7 @@ namespace Implicit
 		 * \param pt The point to get the distance of
 		 * \return The distance from the center to the point
 		 */
-		float getDistance(const glm::vec3& pt);
+		double getDistance(const glm::dvec3& pt);
 
 		/**
 		 * \brief Compute the bounding box of the primitive object

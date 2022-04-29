@@ -18,7 +18,7 @@
 #include "VecPrint.hpp"
 #endif
 
-#define FIND_ROOT_ITERS 15
+#define FIND_ROOT_ITERS 100
 
 namespace Implicit
 {
@@ -47,7 +47,7 @@ namespace Implicit
 		 *
 		 * \param iso The iso value where the surface is defined
 		 */
-		Object(float iso);
+		Object(double iso);
 
 		/**
 		 * \brief Changes the iso value for the object
@@ -55,13 +55,13 @@ namespace Implicit
 		 * Will change the iso value where the surface is defined.
 		 * The iso value should be between 0 and 1.
 		 */
-		void SetIso(float iso);
+		void SetIso(double iso);
 
 		/**
 		 * \brief get the iso value of the surface
 		 * \return iso value
 		 */
-		float GetIso();
+		double GetIso();
 
 		/**
 		 * \brief evaluate the surface at a given point
@@ -70,7 +70,7 @@ namespace Implicit
 		 *
 		 * \param point the point to evaluate
 		 */
-		virtual float Evaluate(const glm::vec3& point)=0;
+		virtual double Evaluate(const glm::dvec3& point)=0;
 
 		/**
 		 * \brief Evaluates field function at point
@@ -79,7 +79,7 @@ namespace Implicit
 		 *
 		 * \return The result of the field function at the point
 		 */
-		virtual float FieldValue(const glm::vec3& point)=0;
+		virtual double FieldValue(const glm::dvec3& point)=0;
 
 		/**
 		 * \brief Projects a point onto the surface of the object
@@ -92,7 +92,7 @@ namespace Implicit
 		 *
 		 * \param pt Point to project to the surface
 		 */
-		glm::vec3 Project(const glm::vec3& pt);
+		glm::dvec3 Project(const glm::dvec3& pt);
 
 		/**
 		 * \brief Attempts to project in a given direction
@@ -106,7 +106,7 @@ namespace Implicit
 		 * \param pt Point to project to the surface
 		 * \param direction Direction to take to project to the surface
 		 */
-		glm::vec3 Project(const glm::vec3& pt, glm::vec3 direction);
+		glm::dvec3 Project(const glm::dvec3& pt, glm::dvec3 direction);
 
 		/**
 		 * \brief Gets intersection of ray with object
@@ -114,7 +114,7 @@ namespace Implicit
 		 * \param origin Starting point of the ray
 		 * \param collision_point Point where ray hits surface
 		 */
-		bool Intersect(const glm::vec3& origin, glm::vec3& collision_point);
+		bool Intersect(const glm::dvec3& origin, glm::dvec3& collision_point);
 		/**
 		 * \brief Gets intersection of a ray with the object
 		 *
@@ -124,25 +124,25 @@ namespace Implicit
 		 * normalized
 		 * \param collision_point Point where ray hits surface
 		 */
-		bool Intersect(const glm::vec3& origin, glm::vec3 direction,
-				glm::vec3& collision_point);
+		bool Intersect(const glm::dvec3& origin, glm::dvec3 direction,
+				glm::dvec3& collision_point);
 
 		/**
 		 * \brief Gets the normal of the surface at a given point.
 		 */
-		virtual glm::vec3 Normal(const glm::vec3& point)=0;
+		virtual glm::dvec3 Normal(const glm::dvec3& point)=0;
 
 		/**
 		 * \brief Get an initial vertex on the surface
 		 *
 		 * \return The vertex on the surface of the object
 		 */
-		virtual glm::vec3 GetStartVertex()=0;
+		virtual glm::dvec3 GetStartVertex()=0;
 
 		/**
 		 * \brief Get the center vertex of the object
 		 */
-		virtual glm::vec3 GetCenterVertex()=0;
+		virtual glm::dvec3 GetCenterVertex()=0;
 
 		/**
 		 * \brief Get Curvature of surface at a point
@@ -163,7 +163,7 @@ namespace Implicit
 		 *
 		 */
 		// TODO: See which of k1 k2 is along tangent and bi-normal
-		void Curvature(const glm::vec3& pt, float& k1, float& k2);
+		void Curvature(const glm::dvec3& pt, double& k1, double& k2);
 
 
 		/**
@@ -174,7 +174,7 @@ namespace Implicit
 		 *
 		 * \param pt Point to get distance of
 		 */
-		float DistanceFromSurface(const glm::vec3& pt);
+		double DistanceFromSurface(const glm::dvec3& pt);
 
 
 		/**
@@ -182,6 +182,17 @@ namespace Implicit
 		 * \return constant reference to the bounding box
 		 */
 		Aabb GetBoundingBox();
+
+		/**
+		 * \brief Generate Tangent space
+		 * Generates the tangent space of a given normal vector
+		 *
+		 * \param N The normal vector to find tangent space of
+		 * \param T Where the tangent will be stored
+		 * \param B Where the bi-normal will be stored
+		 */
+		void getTangentSpace(const glm::dvec3& N, glm::dvec3& T,
+			glm::dvec3& B) const;
 
 	protected:
 		/**
@@ -193,15 +204,15 @@ namespace Implicit
 		 * \param pt Position to get deltas of
 		 * \param eps Epsilon, defaults to FLT_EPSILON
 		 */
-		static inline void getDeltas(float& dx, float& dy, float& dz,
-				const glm::vec3& pt, float eps=FLT_EPSILON);
+		static inline void getDeltas(double& dx, double& dy, double& dz,
+				const glm::dvec3& pt, float eps=DBL_EPSILON);
 
 		/**
 		 * \brief Calculate Hessian matrix at a given point
 		 * \param point The point to get the matrix at
 		 * \return The Hessian Function Curvature matrix
 		 */
-		glm::mat3 hessian(const glm::vec3& point);
+		glm::dmat3 hessian(const glm::dvec3& point);
 
 		/**
 		 * \brief Converts the Hessian to the Curvature of the surface
@@ -210,7 +221,7 @@ namespace Implicit
 		 * \param H Hessian matrix for the desired point
 		 * \return Curvature of the surface
 		 */
-		glm::mat3 surfaceCurvature(const glm::mat3& H);
+		glm::dmat3 surfaceCurvature(const glm::dmat3& H);
 
 		/**
 		 * \brief Secant method root finder
@@ -224,37 +235,32 @@ namespace Implicit
 		 * \return The distance along the direction to move to
 		 * intersect the surface
 		 */
-		float findRoot(const glm::vec3& point, glm::vec3 direction,
-				float initial_distance=1);
+		double findRoot(const glm::dvec3& point, glm::dvec3 direction,
+			double initial_distance=1);
 
 		/**
-		 * \brief Generate Tangent space
-		 * Generates the tangent space of a given normal vector
-		 *
-		 * \param N The normal vector to find tangent space of
-		 * \param T Where the tangent will be stored
-		 * \param B Where the bi-normal will be stored
+		 * \Bisection method root finder
 		 */
-		void getTangentSpace(const glm::vec3& N, glm::vec3& T,
-				glm::vec3& B) const;
+		glm::dvec3 findRootBetween(glm::dvec3 innerPoint, glm::dvec3 outerPoint,
+			int maxiterations = 100);
 
 		/**
 		 * \brief Projects a vertex onto the surface along the normal
 		 * \param pt The point to be projected
 		 */
-		glm::vec3 project(const glm::vec3& pt);
+		glm::dvec3 project(const glm::dvec3& pt);
 
 		/**
 		 * \brief projects a vertex onto the surface
 		 * \param pt The point to be projected
 		 * \param direction the direction to project in
 		 */
-		glm::vec3 project(const glm::vec3& pt, glm::vec3 direction);
+		glm::dvec3 project(const glm::dvec3& pt, glm::dvec3 direction);
 
 		/**
 		 * \brief Iso value where surface is defined
 		 */
-		float m_iso;
+		double m_iso;
 
 		/**
 		 * \brief Bounding box of the underlying shape

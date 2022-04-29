@@ -29,12 +29,12 @@ namespace Implicit
 		 * \brief Construct the intersection of two objects
 		 * Sets the iso value to iso
 		 */
-		Intersect(Object* left, Object* right, float iso);
+		Intersect(Object* left, Object* right, double iso);
 
-		virtual float Evaluate(const glm::vec3& point);
-		virtual float FieldValue(const glm::vec3& point);
+		virtual double Evaluate(const glm::dvec3& point);
+		virtual double FieldValue(const glm::dvec3& point);
 
-		virtual glm::vec3 Normal(const glm::vec3& point);
+		virtual glm::dvec3 Normal(const glm::dvec3& point);
 
 	protected:
 

@@ -49,18 +49,18 @@ public:
 	/**
 	 * Update AABB to include a given point
 	 */
-	void include(const glm::vec3& point);
+	void include(const glm::dvec3& point);
 
 	/**
 	 * Computes the AABB of a set of vertices.
 	 * Overwrites this AABB
 	 */
-	void compute(const std::vector<glm::vec3>& verts);
+	void compute(const std::vector<glm::dvec3>& verts);
 
 	/**
 	 * generates the AABB over a list of vertices
 	 * Overwrites current AABB */
-	void compute(std::list<glm::vec3>& verts);
+	void compute(std::list<glm::dvec3>& verts);
 
 	/**
 	 * Union this AABB with another AABB
@@ -71,27 +71,27 @@ public:
 	/**
 	 * Expand the AABB uniformly by a given factor
 	 */
-	void expand(float factor);
+	void expand(double factor);
 
 	/**
 	 * Transform the AABB
 	 */
-	void transform(const glm::mat4& transform);
+	void transform(const glm::dmat4& transform);
 
 	/**
 	 * Get the volume of the AABB
 	 */
-	float volume() const;
+	double volume() const;
 
 	/**
 	 * Get the surface area of the AABB
 	 */
-	float surfaceArea() const;
+	double surfaceArea() const;
 
 	/**
 	 * Get the length of the longest side
 	 */
-	float size() const;
+	double size() const;
 
 	/**
 	 * \brief Determine if the AABB overlaps another
@@ -103,7 +103,7 @@ public:
 	 * \param point point to test
 	 * \return if the point is within the bounding box
 	 */
-	bool contains(const glm::vec3& point) const;
+	bool contains(const glm::dvec3& point) const;
 
 
 
@@ -119,7 +119,7 @@ public:
 	 * Note: If the origin of the ray is within the box, the hit_point will
 	 * be the origin
 	 */
-	bool intersect(const glm::vec3& origin, const glm::vec3& direction, glm::vec3& hit_point);
+	bool intersect(const glm::dvec3& origin, const glm::dvec3& direction, glm::dvec3& hit_point);
 
 
 	/**
@@ -127,14 +127,14 @@ public:
 	 *
 	 * \return Minimum bounding coordinate in 3D space
 	 */
-	const glm::vec3& min() const;
+	const glm::dvec3& min() const;
 
 	/**
 	 * \brief Returns the maximum bounding coordinate
 	 *
 	 * \return Maximum bounding coordinate in 3D space
 	 */
-	const glm::vec3& max() const;
+	const glm::dvec3& max() const;
 
 	Aabb::Axis majorAxis() const;
 
@@ -145,19 +145,19 @@ private:
 	{
 		public:
 			AABB_RAY() {}
-			AABB_RAY(const glm::vec3& o, const glm::vec3& d) :
+			AABB_RAY(const glm::dvec3& o, const glm::dvec3& d) :
 				origin(o),
 				direction(d)
 			{
-				inv_direction = glm::vec3(1/d.x, 1/d.y, 1/d.z);
+				inv_direction = glm::dvec3(1/d.x, 1/d.y, 1/d.z);
 				sign[0] = (inv_direction.x < 0);
 				sign[1] = (inv_direction.y < 0);
 				sign[2] = (inv_direction.z < 0);
 			}
 
-			glm::vec3 origin;
-			glm::vec3 direction;
-			glm::vec3 inv_direction;
+			glm::dvec3 origin;
+			glm::dvec3 direction;
+			glm::dvec3 inv_direction;
 			int sign[3];
 	};
 
@@ -191,12 +191,12 @@ private:
 	 *
 	 * -- Simplified for six-tuple origin(x, y, z), direction(x, y, z)
 	 */
-	static unsigned int hash_ray(const glm::vec3& origin, const glm::vec3& direction);
+	static unsigned int hash_ray(const glm::dvec3& origin, const glm::dvec3& direction);
 	static unsigned int hash_ray(const AABB_RAY& R);
 
 	AABB_RAY m_ray_cache[AABB_RAY_CACHE_SIZE];
 
-	glm::vec3 bounds[2];
+	glm::dvec3 bounds[2];
 };
 
 #endif//AABB_HPP

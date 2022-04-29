@@ -2,15 +2,17 @@
 #define IMPLICIT_TORUS_HPP
 
 #include "ImplicitPrimitive.hpp"
+#include "ImplicitDifferentiated.hpp"
 
 namespace Implicit
 {
 	/**
 	 * \brief Implicitly defined torus primitive object
 	 */
-	class Torus : public Primitive
+	class Torus : public Differentiated<Torus>
 	{
 	public:
+		friend class Differentiated<Torus>;
 		/**
 		 * \brief Construct a Torus Primitive Object
 		 *
@@ -18,10 +20,10 @@ namespace Implicit
 		 * Defaults:
 		 * 	Outer radius: 0.6
 		 * 	Inner radius: 0.5
-		 * 	iso Value: 0.5
+		 * 	iso Value: 0.0
 		 * \param f Field Function
 		 */
-		Torus(FieldFunction f);
+		Torus();
 
 		/**
 		 * \brief Construct a Torus Primitive Object
@@ -33,7 +35,7 @@ namespace Implicit
 		 * \param f Field Function
 		 * \param iso The iso value
 		 */
-		Torus(FieldFunction f, float iso);
+		Torus(double iso);
 
 		/**
 		 * \brief Construct a Torus Primitive Object
@@ -46,31 +48,34 @@ namespace Implicit
 		 * \param outer_radius The larger radius on the outside of the
 		 * torus
 		 */
-		Torus(FieldFunction f, float iso, float inner_radius, float outer_radius);
+		Torus(double iso, double inner_radius, double outer_radius);
 
-		virtual float Evaluate(const glm::vec3& point);
+		virtual double Evaluate(const glm::dvec3& point);
 
-		virtual float FieldValue(const glm::vec3& point);
+		virtual double FieldValue(const glm::dvec3& point);
 
-		virtual glm::vec3 GetStartVertex();
+		virtual glm::dvec3 GetStartVertex();
 
-		virtual glm::vec3 GetCenterVertex();
+		virtual glm::dvec3 GetCenterVertex();
 
-		virtual glm::vec3 Normal(const glm::vec3& point);
+		virtual glm::dvec3 Normal(const glm::dvec3& point);
 
 	protected:
-		float getDistance(const glm::vec3& point);
+		double getDistance(const glm::dvec3& point);
 		void compute_bounds();
+
+		EquationT Equation;
+		virtual void SetEquation() override;
+
 	private:
 
-		glm::vec3 getNearest(const glm::vec3& pt);
-		float m_inner_radius;
-		float m_outer_radius;
+		glm::dvec3 getNearest(const glm::dvec3& pt);
 
-		// Radius of the cross-section circle
-		float m_cross_radius;
+		// r
+		double m_cross_radius;
 
-		float m_center_radius;
+		// R
+		double m_center_radius;
 
 	};
 };

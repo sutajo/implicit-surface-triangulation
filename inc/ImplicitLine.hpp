@@ -31,7 +31,7 @@ namespace Implicit
 		 * \param f FieldFunction for the shape
 		 * \param iso The iso value of the shape
 		 */
-		Line(FieldFunction f, float iso);
+		Line(FieldFunction f, double iso);
 
 		/**
 		 * \brief Construct a Line Primitive Object
@@ -42,7 +42,7 @@ namespace Implicit
 		 * \param iso The iso value of the shape
 		 * \param radius The defined maximum radius of the shape
 		 */
-		Line(FieldFunction f, float iso, float radius);
+		Line(FieldFunction f, double iso, double radius);
 
 		/**
 		 * \brief Construct a Line Primitive Object
@@ -54,7 +54,7 @@ namespace Implicit
 		 * \param radius The defined maximum radius of the shape
 		 * \param length The lenght of the line
 		 */
-		Line(FieldFunction f, float iso, float radius, float length);
+		Line(FieldFunction f, double iso, double radius, double length);
 
 
 		/**
@@ -64,14 +64,14 @@ namespace Implicit
 		 *
 		 * \param point The point to evaluate
 		 */
-		virtual float Evaluate(const glm::vec3& point);
+		virtual double Evaluate(const glm::dvec3& point);
 
 		/**
 		 * \brief Evaluate the field function at a given point
 		 *
 		 * \param point The point to evaluate
 		 */
-		virtual float FieldValue(const glm::vec3& point);
+		virtual double FieldValue(const glm::dvec3& point);
 
 		/**
 		 * \brief returns a vertex on the surface
@@ -82,7 +82,7 @@ namespace Implicit
 		 *
 		 * \return vertex
 		 */
-		virtual glm::vec3 GetStartVertex();
+		virtual glm::dvec3 GetStartVertex();
 
 		/**
 		 * \brief returns the center vertex
@@ -90,9 +90,9 @@ namespace Implicit
 		 * This will return (0, 0, 0) for all instances of
 		 * Implicit::Primitive.
 		 */
-		virtual glm::vec3 GetCenterVertex();
+		virtual glm::dvec3 GetCenterVertex();
 
-		virtual glm::vec3 Normal(const glm::vec3& point);
+		virtual glm::dvec3 Normal(const glm::dvec3& point);
 
 	protected:
 
@@ -100,12 +100,12 @@ namespace Implicit
 
 	private:
 
-		glm::vec3 getNearest(const glm::vec3& point);
-		float getDistance(const glm::vec3& point);
+		glm::dvec3 getNearest(const glm::dvec3& point);
+		double getDistance(const glm::dvec3& point);
 
-		float m_length;
-		glm::vec3 m_endpoint_1;
-		glm::vec3 m_endpoint_2;
+		double m_length;
+		glm::dvec3 m_endpoint_1;
+		glm::dvec3 m_endpoint_2;
 
 	};
 };

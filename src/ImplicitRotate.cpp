@@ -10,13 +10,13 @@
 
 using namespace Implicit;
 
-Rotate::Rotate(Object* child, const glm::vec3& axis, float angle) :
+Rotate::Rotate(Object* child, const glm::dvec3& axis, double angle) :
 	Transform(child)
 {
-	setWorldMatrix(glm::rotate(glm::mat4(), angle, glm::normalize(axis)));
+	setWorldMatrix(glm::rotate(glm::dmat4(1.0), angle, glm::normalize(axis)));
 }
 
-glm::vec3 Rotate::Normal(const glm::vec3& p)
+glm::dvec3 Rotate::Normal(const glm::dvec3& p)
 {
 	return map_from(m_child->Normal(map_to(p)));
 }

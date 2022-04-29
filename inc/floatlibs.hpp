@@ -14,56 +14,56 @@
 #include <iostream>
 
 
-inline float f_equ(float a, float b)
+inline double f_equ(double a, double b)
 {
-	return (a <= b + FLT_EPSILON && a >= b - FLT_EPSILON);
+	return (a <= b + DBL_EPSILON && a >= b - DBL_EPSILON);
 }
 
-inline float f_equ(float a, float b, float eps)
+inline double f_equ(double a, double b, double eps)
 {
 	return (a <= b + eps && a >= b - eps);
 }
 
-inline bool f_is_zero(float a)
+inline bool f_is_zero(double a)
 {
 	return f_equ(a, 0);
 }
 
-inline int f_sign(float x)
+inline int f_sign(double x)
 {
 	return (f_is_zero(x) ? 0 : ( x < 0 ? -1 : 1 ));
 }
 
-inline float f_ge(float a, float b)
+inline float f_ge(double a, double b)
 {
 	//std::cerr << a << ">=" << b << '\n';
-	return a >= b - FLT_EPSILON;
+	return a >= b - DBL_EPSILON;
 }
 
-inline float f_le(float a, float b)
+inline double f_le(double a, double b)
 {
 	//std::cerr << a << "<=" << b << '\n';
-	return a <= b + FLT_EPSILON;
+	return a <= b + DBL_EPSILON;
 }
 
-inline float f_lt(float a, float b)
+inline double f_lt(double a, double b)
 {
 	//std::cerr << a << '<' << b << '\n';
-	return (a < b + FLT_EPSILON || a < b - FLT_EPSILON);
+	return (a < b + DBL_EPSILON || a < b - DBL_EPSILON);
 }
 
-inline float f_gt(float a, float b)
+inline double f_gt(double a, double b)
 {
 	//std::cerr << a << '>' << b << '\n';
-	return (a > b - FLT_EPSILON || a > b + FLT_EPSILON);
+	return (a > b - DBL_EPSILON || a > b + DBL_EPSILON);
 }
 
-inline float f_div(float a, float b)
+inline double f_div(double a, double b)
 {
 	if (f_is_zero(b))
 	{
 		if (f_is_zero(a)) return 0;
-		else return FLT_MAX * f_sign(a);
+		else return DBL_MAX * f_sign(a);
 	}
 	else
 	{
@@ -71,7 +71,7 @@ inline float f_div(float a, float b)
 		else
 		{
 			if ((a + b) == a)
-				return FLT_MAX * f_sign(a) * f_sign(b);
+				return DBL_MAX * f_sign(a) * f_sign(b);
 			else return a / b;
 		}
 	}

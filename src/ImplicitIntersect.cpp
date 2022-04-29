@@ -15,24 +15,24 @@ Intersect::Intersect(Object* left, Object* right) :
 	compute_bounds();
 }
 
-Intersect::Intersect(Object* left, Object* right, float iso) :
+Intersect::Intersect(Object* left, Object* right, double iso) :
 	Operator(left, right, iso)
 {
 	compute_bounds();
 }
 
-float Intersect::Evaluate(const glm::vec3& point)
+double Intersect::Evaluate(const glm::dvec3& point)
 {
 	return FieldValue(point) - m_iso;
 }
 
-float Intersect::FieldValue(const glm::vec3& point)
+double Intersect::FieldValue(const glm::dvec3& point)
 {
 	if (!m_bounds.contains(point)) return 0;
 	return std::min(m_left_child->FieldValue(point), m_right_child->FieldValue(point));
 }
 
-glm::vec3 Intersect::Normal(const glm::vec3& point)
+glm::dvec3 Intersect::Normal(const glm::dvec3& point)
 {
 	if (m_left_child->FieldValue(point) < m_right_child->FieldValue(point))
 		return m_left_child->Normal(point);
@@ -41,8 +41,8 @@ glm::vec3 Intersect::Normal(const glm::vec3& point)
 
 void Intersect::compute_bounds()
 {
-	glm::vec3 min;
-	glm::vec3 max;
+	glm::dvec3 min;
+	glm::dvec3 max;
 	const Aabb left_bb = m_left_child->GetBoundingBox();
 	const Aabb right_bb = m_right_child->GetBoundingBox();
 	min.x = left_bb.min().x > right_bb.min().x ? left_bb.min().x : right_bb.min().x;

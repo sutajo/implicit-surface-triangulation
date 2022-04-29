@@ -10,10 +10,10 @@
 #define FIELDFUNCTIONS_H
 #include <cmath>
 
-float linearFunction(float r, float R);
+double linearFunction(double r, double R);
 
-float geoffFunction(float r, float R);
+double geoffFunction(double r, double R);
 
-float metaballFunction(float r, float R);
+double metaballFunction(double r, double R);
 
 #endif // FIELDFUNCTIONS_H

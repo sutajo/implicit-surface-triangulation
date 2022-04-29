@@ -32,8 +32,8 @@ namespace Implicit
 			 * \param angle The amount to rotate around the axis,
 			 * in radians
 			 */
-			Rotate(Object* child, const glm::vec3& axis, float angle);
-			virtual glm::vec3 Normal(const glm::vec3& point);
+			Rotate(Object* child, const glm::dvec3& axis, double angle);
+			virtual glm::dvec3 Normal(const glm::dvec3& point);
 
 	};
 };

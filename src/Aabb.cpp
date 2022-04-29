@@ -12,13 +12,13 @@
 
 void Aabb::reset()
 {
-	const float max = INFINITY;
-	bounds[1] = glm::vec3(-max, -max, -max);
-	bounds[0] = glm::vec3(max, max, max);
+	const double max = INFINITY;
+	bounds[1] = glm::dvec3(-max, -max, -max);
+	bounds[0] = glm::dvec3(max, max, max);
 	memset(m_ray_cache, 0, AABB_RAY_CACHE_SIZE);
 }
 
-void Aabb::include(const glm::vec3& point)
+void Aabb::include(const glm::dvec3& point)
 {
 	if (point.x > bounds[1].x) bounds[1].x = point.x;
 	if (point.y > bounds[1].y) bounds[1].y = point.y;
@@ -29,7 +29,7 @@ void Aabb::include(const glm::vec3& point)
 	if (point.z < bounds[0].z) bounds[0].z = point.z;
 }
 
-void Aabb::compute(const std::vector<glm::vec3>& verts)
+void Aabb::compute(const std::vector<glm::dvec3>& verts)
 {
 	if (verts.size() < 1) return;
 	bounds[1] = verts[0];
@@ -41,20 +41,20 @@ void Aabb::compute(const std::vector<glm::vec3>& verts)
 	}
 }
 
-void Aabb::compute(std::list<glm::vec3>& verts)
+void Aabb::compute(std::list<glm::dvec3>& verts)
 {
 	if (verts.size() < 1) return;
 	bounds[1] = *(verts.begin());
 	bounds[0] = *(verts.begin());
 
-	for (std::list<glm::vec3>::iterator i = ++verts.begin();
+	for (std::list<glm::dvec3>::iterator i = ++verts.begin();
 			i != verts.end(); i++) include(*i);
 }
 
 void Aabb::add(const Aabb& other)
 {
-	const glm::vec3& max_other = other.bounds[1];
-	const glm::vec3& min_other = other.bounds[0];
+	const glm::dvec3& max_other = other.bounds[1];
+	const glm::dvec3& min_other = other.bounds[0];
 
 	if (max_other.x > bounds[1].x) bounds[1].x = max_other.x;
 	if (max_other.y > bounds[1].y) bounds[1].y = max_other.y;
@@ -65,44 +65,44 @@ void Aabb::add(const Aabb& other)
 	if (min_other.z < bounds[0].z) bounds[0].z = min_other.z;
 }
 
-void Aabb::expand(float factor)
+void Aabb::expand(double factor)
 {
-	glm::vec3 diff = (bounds[1] - bounds[0]) * (0.5f * factor);
-	glm::vec3 center = (bounds[1] + bounds[0]) * 0.5f;
+	glm::dvec3 diff = (bounds[1] - bounds[0]) * (0.5 * factor);
+	glm::dvec3 center = (bounds[1] + bounds[0]) * 0.5;
 	bounds[1] = center + diff;
 	bounds[0] = center + diff;
 }
 
-void Aabb::transform(const glm::mat4& t)
+void Aabb::transform(const glm::dmat4& t)
 {
 	// Translated points
-	std::vector<glm::vec3> trans(8);
-	trans[0]=glm::vec3(t*glm::vec4(bounds[1].x, bounds[1].y, bounds[1].z, 1.f));
-	trans[1]=glm::vec3(t*glm::vec4(bounds[1].x, bounds[0].y, bounds[1].z, 1.f));
-	trans[2]=glm::vec3(t*glm::vec4(bounds[0].x, bounds[1].y, bounds[1].z, 1.f));
-	trans[3]=glm::vec3(t*glm::vec4(bounds[0].x, bounds[0].y, bounds[1].z, 1.f));
-	trans[4]=glm::vec3(t*glm::vec4(bounds[1].x, bounds[1].y, bounds[0].z, 1.f));
-	trans[5]=glm::vec3(t*glm::vec4(bounds[1].x, bounds[0].y, bounds[0].z, 1.f));
-	trans[6]=glm::vec3(t*glm::vec4(bounds[0].x, bounds[1].y, bounds[0].z, 1.f));
-	trans[7]=glm::vec3(t*glm::vec4(bounds[0].x, bounds[0].y, bounds[0].z, 1.f));
+	std::vector<glm::dvec3> trans(8);
+	trans[0]=glm::dvec3(t*glm::dvec4(bounds[1].x, bounds[1].y, bounds[1].z, 1.));
+	trans[1]=glm::dvec3(t*glm::dvec4(bounds[1].x, bounds[0].y, bounds[1].z, 1.));
+	trans[2]=glm::dvec3(t*glm::dvec4(bounds[0].x, bounds[1].y, bounds[1].z, 1.));
+	trans[3]=glm::dvec3(t*glm::dvec4(bounds[0].x, bounds[0].y, bounds[1].z, 1.));
+	trans[4]=glm::dvec3(t*glm::dvec4(bounds[1].x, bounds[1].y, bounds[0].z, 1.));
+	trans[5]=glm::dvec3(t*glm::dvec4(bounds[1].x, bounds[0].y, bounds[0].z, 1.));
+	trans[6]=glm::dvec3(t*glm::dvec4(bounds[0].x, bounds[1].y, bounds[0].z, 1.));
+	trans[7]=glm::dvec3(t*glm::dvec4(bounds[0].x, bounds[0].y, bounds[0].z, 1.));
 	compute(trans);
 }
 
-float Aabb::volume() const
+double Aabb::volume() const
 {
-	glm::vec3 width = bounds[1] - bounds[0];
+	glm::dvec3 width = bounds[1] - bounds[0];
 	return width.x* width.y* width.z;
 }
 
-float Aabb::surfaceArea() const
+double Aabb::surfaceArea() const
 {
-	glm::vec3 width = bounds[1] - bounds[0];
+	glm::dvec3 width = bounds[1] - bounds[0];
 	return 2.f*(width.x * width.y + width.z * width.y + width.z * width.x);
 }
 
-float Aabb::size() const
+double Aabb::size() const
 {
-	glm::vec3 width = bounds[1] - bounds[0];
+	glm::dvec3 width = bounds[1] - bounds[0];
 	(width.x < width.y) && (width.x = width.y);
 	(width.x < width.z) && (width.x  = width.z);
 	return width.x;
@@ -119,7 +119,7 @@ bool Aabb::overlap(const Aabb& o) const
 	return true;
 }
 
-bool Aabb::contains(const glm::vec3& p) const
+bool Aabb::contains(const glm::dvec3& p) const
 {
 	return
 		((bounds[0].x < p.x) && (p.x < bounds[1].x)) &
@@ -127,11 +127,11 @@ bool Aabb::contains(const glm::vec3& p) const
 		((bounds[0].z < p.z) && (p.z < bounds[1].z));
 }
 
-const glm::vec3& Aabb::min() const
+const glm::dvec3& Aabb::min() const
 {
 	return bounds[0];
 }
-const glm::vec3& Aabb::max() const
+const glm::dvec3& Aabb::max() const
 {
 	return bounds[1];
 }
@@ -141,7 +141,7 @@ const glm::vec3& Aabb::max() const
 #define YZ 0b00000100
 Aabb::Axis Aabb::majorAxis() const
 {
-	register unsigned char result = 0;
+	unsigned char result = 0;
 	const glm::vec3 m = bounds[1] - bounds[0];
 	(m.x > m.z) && (result |= XZ);
 	(m.y > m.z) && (result |= YZ);
@@ -153,7 +153,7 @@ Aabb::Axis Aabb::majorAxis() const
 
 Aabb::Axis Aabb::minorAxis() const
 {
-	register unsigned char result = 0;
+	unsigned char result = 0;
 	const glm::vec3 m = bounds[1] - bounds[0];
 	(m.x < m.z) && (result |= XZ);
 	(m.y < m.z) && (result |= YZ);
@@ -173,7 +173,7 @@ unsigned int Aabb::hash_ray(const Aabb::AABB_RAY& R)
 	return hash_ray(R.origin, R.direction);
 }
 
-unsigned int Aabb::hash_ray(const glm::vec3& origin, const glm::vec3& direction)
+unsigned int Aabb::hash_ray(const glm::dvec3& origin, const glm::dvec3& direction)
 {
 	std::hash<float> hash_float;
 	long unsigned int x;
@@ -222,8 +222,8 @@ unsigned int Aabb::hash_ray(const glm::vec3& origin, const glm::vec3& direction)
 /**
  * http://www.cs.utah.edu/~awilliam/box/box.pdf
  */
-bool Aabb::intersect(const glm::vec3& origin, const glm::vec3& direction,
-		glm::vec3& hit_point)
+bool Aabb::intersect(const glm::dvec3& origin, const glm::dvec3& direction,
+		glm::dvec3& hit_point)
 {
 	// Check that we don't already have a ray in the cache
 	// Cached ray
@@ -244,7 +244,7 @@ bool Aabb::intersect(const glm::vec3& origin, const glm::vec3& direction,
 	}
 
 	// Using test ray
-	float tmin, tmax, tymin, tymax, tzmin, tzmax;
+	double tmin, tmax, tymin, tymax, tzmin, tzmax;
 	tmin = (bounds[r.sign[0]].x - r.origin.x) * r.inv_direction.x;
 	tmax = (bounds[1-r.sign[0]].x - r.origin.x) * r.inv_direction.x;
 	tymin = (bounds[r.sign[1]].y - r.origin.y) * r.inv_direction.y;

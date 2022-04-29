@@ -33,7 +33,7 @@ namespace Implicit
 	 * \param r distance from skeleton of the primitive
 	 * \param R maximum distance from skeleton
 	 */
-	typedef float(*FieldFunction)(float r, float R);
+	typedef double(*FieldFunction)(double r, double R);
 
 	/**
 	 * \brief A blob with a defined field function and iso value
@@ -65,7 +65,7 @@ namespace Implicit
 		 * \param f The FieldFunction for the primitive
 		 * \param iso The iso value where the function is defined
 		 */
-		Primitive(FieldFunction f, float iso);
+		Primitive(FieldFunction f, double iso);
 
 		/**
 		 * \brief Create new Primitive
@@ -77,7 +77,7 @@ namespace Implicit
 		 * \param iso The iso value where the surface is defined
 		 * \param radius The radius of the object
 		 */
-		Primitive(FieldFunction f, float iso, float radius);
+		Primitive(FieldFunction f, double iso, double radius);
 
 
 
@@ -88,14 +88,14 @@ namespace Implicit
 		 *
 		 * \param point The point to evaluate
 		 */
-		virtual float Evaluate(const glm::vec3& point)=0;
+		virtual double Evaluate(const glm::dvec3& point)=0;
 
 		/**
 		 * \brief Evaluate the field function at a given point
 		 *
 		 * \param point The point to evaluate
 		 */
-		virtual float FieldValue(const glm::vec3& point)=0;
+		virtual double FieldValue(const glm::dvec3& point)=0;
 
 		/**
 		 * \brief returns a vertex on the surface
@@ -106,7 +106,7 @@ namespace Implicit
 		 *
 		 * \return vertex
 		 */
-		virtual glm::vec3 GetStartVertex()=0;
+		virtual glm::dvec3 GetStartVertex()=0;
 
 		/**
 		 * \brief returns the center vertex
@@ -114,9 +114,9 @@ namespace Implicit
 		 * This will return (0, 0, 0) for all instances of
 		 * Implicit::Primitive.
 		 */
-		virtual glm::vec3 GetCenterVertex()=0;
+		virtual glm::dvec3 GetCenterVertex()=0;
 
-		virtual glm::vec3 Normal(const glm::vec3& point)=0;
+		virtual glm::dvec3 Normal(const glm::dvec3& point)=0;
 
 	protected:
 
@@ -126,7 +126,7 @@ namespace Implicit
 		 * Will return a value between 0 and 1
 		 * \return The result of the field function at distance r
 		 */
-		virtual float FieldValue(float r);
+		virtual double FieldValue(double r);
 
 		/**
 		 * \brief Evaluate the surface at a distance
@@ -135,7 +135,7 @@ namespace Implicit
 		 *
 		 * \param r The distance to evaluate the function
 		 */
-		virtual float Evaluate(float r);
+		virtual double Evaluate(double r);
 
 
 		/**
@@ -144,7 +144,7 @@ namespace Implicit
 		 * \param pt The point to get the distance of
 		 * \return The distance from the center to the point
 		 */
-		virtual float getDistance(const glm::vec3& pt)=0;
+		virtual double getDistance(const glm::dvec3& pt)=0;
 
 		/**
 		 * \brief Compute the bounding box of the primitive object
@@ -158,7 +158,7 @@ namespace Implicit
 		/**
 		 * \brief Maximum radius of the primitive
 		 */
-		float m_radius;
+		double m_radius;
 	private:
 	};
 };

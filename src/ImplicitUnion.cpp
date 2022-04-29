@@ -16,25 +16,25 @@ Union::Union(Object* left, Object* right) :
 	compute_bounds();
 }
 
-Union::Union(Object* left, Object* right, float iso) :
+Union::Union(Object* left, Object* right, double iso) :
 	Operator(left, right, iso)
 {
 	compute_bounds();
 }
 
-float Union::Evaluate(const glm::vec3& point)
+double Union::Evaluate(const glm::dvec3& point)
 {
 	return FieldValue(point) - m_iso;
 }
 
-float Union::FieldValue(const glm::vec3& point)
+double Union::FieldValue(const glm::dvec3& point)
 {
 	if (!m_bounds.contains(point)) return 0;
 	return std::max(m_left_child->FieldValue(point),
 			m_right_child->FieldValue(point));
 }
 
-glm::vec3 Union::Normal(const glm::vec3& point)
+glm::dvec3 Union::Normal(const glm::dvec3& point)
 {
 	if (m_left_child->FieldValue(point) > m_right_child->FieldValue(point))
 		return m_left_child->Normal(point);

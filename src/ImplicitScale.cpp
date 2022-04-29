@@ -7,6 +7,7 @@
  */
 
 #include "ImplicitScale.hpp"
+#include <glm/gtx/transform.hpp>
 
 using namespace Implicit;
 
@@ -19,6 +20,9 @@ Scale::Scale(Object* child, const glm::vec3& scale) :
 	transform[2][2] = scale.z;
 	m_normal_conversion = glm::inverseTranspose(transform);
 	setWorldMatrix(transform);
+	auto bb = child->GetBoundingBox();
+	bb.transform(glm::scale(scale));
+	m_bounds = bb;
 }
 
 Scale::Scale(Object* child, float x, float y, float z) :

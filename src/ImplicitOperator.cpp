@@ -14,22 +14,22 @@ Operator::Operator(Object* left, Object* right) :
 	m_left_child(left),
 	m_right_child(right)
 {
-	m_iso = (left->GetIso() + right->GetIso()) / 2.f;
+	m_iso = (left->GetIso() + right->GetIso()) / 2.;
 }
 
-Operator::Operator(Object* left, Object* right, float iso) :
+Operator::Operator(Object* left, Object* right, double iso) :
 	Object(iso),
 	m_left_child(left),
 	m_right_child(right)
 {
 }
 
-glm::vec3 Operator::GetStartVertex()
+glm::dvec3 Operator::GetStartVertex()
 {
 	return project(GetCenterVertex());
 }
 
-glm::vec3 Operator::GetCenterVertex()
+glm::dvec3 Operator::GetCenterVertex()
 {
-	return (m_left_child->GetCenterVertex()-m_right_child->GetCenterVertex())*0.5f;
+	return (m_left_child->GetCenterVertex()-m_right_child->GetCenterVertex())*0.5;
 }

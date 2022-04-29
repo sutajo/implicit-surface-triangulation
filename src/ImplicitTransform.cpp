@@ -10,7 +10,7 @@
 
 using namespace Implicit;
 
-Transform::Transform(Object* obj, const glm::mat4& m) :
+Transform::Transform(Object* obj, const glm::dmat4& m) :
 	Object(),
 	m_child(obj),
 	m_to_local(m),
@@ -24,29 +24,29 @@ Transform::Transform(Object* obj) :
 {
 }
 
-float Transform::Evaluate(const glm::vec3& point)
+double Transform::Evaluate(const glm::dvec3& point)
 {
 	return m_child->Evaluate(map_to(point));
 }
 
-float Transform::FieldValue(const glm::vec3& point)
+double Transform::FieldValue(const glm::dvec3& point)
 {
 	if (m_bounds.contains(point))
 		return m_child->FieldValue(map_to(point));
 	else return 0;
 }
 
-glm::vec3 Transform::GetStartVertex()
+glm::dvec3 Transform::GetStartVertex()
 {
 	return (map_from(m_child->GetStartVertex()));
 }
 
-glm::vec3 Transform::GetCenterVertex()
+glm::dvec3 Transform::GetCenterVertex()
 {
 	return (map_from(m_child->GetCenterVertex()));
 }
 
-void Transform::setWorldMatrix(const glm::mat4& m)
+void Transform::setWorldMatrix(const glm::dmat4& m)
 {
 	m_bounds = m_child->GetBoundingBox();
 	m_bounds.transform(m);
@@ -54,12 +54,12 @@ void Transform::setWorldMatrix(const glm::mat4& m)
 	m_to_local = glm::inverse(m);
 }
 
-glm::vec3 Transform::map_to(glm::vec3 v)
+glm::dvec3 Transform::map_to(glm::dvec3 v)
 {
-	return glm::vec3(m_to_local * glm::vec4(v, 1.f));
+	return glm::dvec3(m_to_local * glm::dvec4(v, 1.f));
 }
 
-glm::vec3 Transform::map_from(glm::vec3 v)
+glm::dvec3 Transform::map_from(glm::dvec3 v)
 {
-	return glm::vec3(m_from_local * glm::vec4(v, 1.f));
+	return glm::dvec3(m_from_local * glm::dvec4(v, 1.f));
 }

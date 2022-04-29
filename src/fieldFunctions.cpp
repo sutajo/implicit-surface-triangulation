@@ -8,21 +8,21 @@
 
 #include "fieldFunctions.hpp"
 
-float linearFunction(float r, float R)
+double linearFunction(double r, double R)
 {
-	return ((r*r) >= (R*R)) ? 0 : 1 * R - r;
+	return R - r;
 }
 
-float geoffFunction(float r, float R)
+double geoffFunction(double r, double R)
 {
 	if (r >= R) return 0;
-	register const float rs = (r * r) / (R * R);
-	register const float rq = rs * rs;
-	register const float rse = rq * rs;
+	const double rs = (r * r) / (R * R);
+	const double rq = rs * rs;
+	const double rse = rq * rs;
 	return 1 - (4.f/9.f) * rse + (17.f/9.f) * rq - (22.f/9.f) * rs;
 }
 
-float metaballFunction(float r, float R)
+double metaballFunction(double r, double R)
 {
 	if (r <= (R / 3.f))
 		return 1 - (3 * (r * r ) / (R * R));

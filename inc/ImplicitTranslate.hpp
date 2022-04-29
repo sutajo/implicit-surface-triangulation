@@ -29,7 +29,7 @@ namespace Implicit
 		 * \param direction The vector to translate the object along.
 		 * The magnitude of the vector defines how far.
 		 */
-		Translate(Object* child, const glm::vec3& direction);
+		Translate(Object* child, const glm::dvec3& direction);
 
 		/**
 		 * \brief Construct a translation
@@ -39,8 +39,8 @@ namespace Implicit
 		 * \param y Amount to translate along the y axis
 		 * \param z Amount to translate along the z axis
 		 */
-		Translate(Object* child, float x, float y, float z);
-		virtual glm::vec3 Normal(const glm::vec3& point);
+		Translate(Object* child, double x, double y, double z);
+		virtual glm::dvec3 Normal(const glm::dvec3& point);
 	};
 
 };
