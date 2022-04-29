@@ -1,0 +1,44 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImplicitSurfaceTriangulation", "ImplicitSurfaceTriangulation\ImplicitSurfaceTriangulation.vcxproj", "{09F4FC54-1168-47FE-8118-3BC4E6CDC2CD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SurfaceTriangulationDemoApp", "SurfaceTriangulationDemoApp\SurfaceTriangulationDemoApp.vcxproj", "{D6F5E6F5-7BCA-4B6C-B28D-46068EB18D4C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{09F4FC54-1168-47FE-8118-3BC4E6CDC2CD} = {09F4FC54-1168-47FE-8118-3BC4E6CDC2CD}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{09F4FC54-1168-47FE-8118-3BC4E6CDC2CD}.Debug|x64.ActiveCfg = Debug|x64
+		{09F4FC54-1168-47FE-8118-3BC4E6CDC2CD}.Debug|x64.Build.0 = Debug|x64
+		{09F4FC54-1168-47FE-8118-3BC4E6CDC2CD}.Debug|x86.ActiveCfg = Debug|Win32
+		{09F4FC54-1168-47FE-8118-3BC4E6CDC2CD}.Debug|x86.Build.0 = Debug|Win32
+		{09F4FC54-1168-47FE-8118-3BC4E6CDC2CD}.Release|x64.ActiveCfg = Release|x64
+		{09F4FC54-1168-47FE-8118-3BC4E6CDC2CD}.Release|x64.Build.0 = Release|x64
+		{09F4FC54-1168-47FE-8118-3BC4E6CDC2CD}.Release|x86.ActiveCfg = Release|Win32
+		{09F4FC54-1168-47FE-8118-3BC4E6CDC2CD}.Release|x86.Build.0 = Release|Win32
+		{D6F5E6F5-7BCA-4B6C-B28D-46068EB18D4C}.Debug|x64.ActiveCfg = Debug|x64
+		{D6F5E6F5-7BCA-4B6C-B28D-46068EB18D4C}.Debug|x64.Build.0 = Debug|x64
+		{D6F5E6F5-7BCA-4B6C-B28D-46068EB18D4C}.Debug|x86.ActiveCfg = Debug|Win32
+		{D6F5E6F5-7BCA-4B6C-B28D-46068EB18D4C}.Debug|x86.Build.0 = Debug|Win32
+		{D6F5E6F5-7BCA-4B6C-B28D-46068EB18D4C}.Release|x64.ActiveCfg = Release|x64
+		{D6F5E6F5-7BCA-4B6C-B28D-46068EB18D4C}.Release|x64.Build.0 = Release|x64
+		{D6F5E6F5-7BCA-4B6C-B28D-46068EB18D4C}.Release|x86.ActiveCfg = Release|Win32
+		{D6F5E6F5-7BCA-4B6C-B28D-46068EB18D4C}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F43D002D-DBB8-489A-AFF3-C55A46549330}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\ImplicitSystem">
+      <UniqueIdentifier>{2b546799-c707-4c9f-9437-a8f3ae8f9d1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ImplicitSystem">
+      <UniqueIdentifier>{c8b9e396-d65b-4062-a9d4-94cba7ddf8e4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ImplicitSystem\inc\Aabb.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\fieldFunctions.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\floatlibs.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\ImplicitBlend.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\ImplicitIntersect.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\ImplicitLine.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\ImplicitObject.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\ImplicitOperator.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\ImplicitPrimitive.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\ImplicitRotate.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\ImplicitScale.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\ImplicitSphere.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\ImplicitSystem.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\ImplicitTorus.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\ImplicitTransform.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\ImplicitTranslate.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\ImplicitUnion.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ImplicitSystem\inc\VecPrint.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\glmMeshAdaptor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\glmMeshKdTree.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ImplicitSurfaceTriangulation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Triangle.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\VectorMath.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ImplicitDifferentiated.hpp">
+      <Filter>Header Files\ImplicitSystem</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ImplicitSurfaceTriangulation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\Aabb.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\fieldFunctions.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\ImplicitBlend.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\ImplicitIntersect.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\ImplicitLine.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\ImplicitObject.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\ImplicitOperator.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\ImplicitPrimitive.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\ImplicitRotate.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\ImplicitScale.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\ImplicitSphere.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\ImplicitTorus.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\ImplicitTransform.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\ImplicitTranslate.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\ImplicitUnion.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ImplicitSystem\src\VecPrint.cpp">
+      <Filter>Source Files\ImplicitSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="glmMeshAdaptor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Triangle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VectorMath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

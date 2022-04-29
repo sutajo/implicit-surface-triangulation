@@ -1,0 +1,14 @@
+{
+  "name": "surfacetriangulationdemoapp",
+  "version-string": "1.0.0",
+  "dependencies": [
+    "opengl",
+    "glew",
+    "freeglut",
+    "glm",
+    "imgui",
+    "devil",
+    "openmesh",
+    "nanoflann"
+  ]
+}
