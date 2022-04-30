@@ -38,7 +38,8 @@ void Implicit::CurvatureTessellator::GenerateSeedTriangle()
         !object.GetBoundingBox().contains(finalPoint))
         throw std::runtime_error("Failed to generate seed triangle: vertices fall out of the bounding box");
 
-    addNewFace(seedPoint, nextPoint, finalPoint);
+    auto newFace = addNewFace(seedPoint, nextPoint, finalPoint);
+    mesh.data(newFace).faceCreationMethod = FaceCreationMethod::Seed;
 
     if (visitor)
         visitor->get().SeedTriangleGenerated(Triangle{seedPoint, nextPoint, finalPoint});
@@ -87,11 +88,17 @@ glm::dvec3 Implicit::CurvatureTessellator::getItp(const glm::dvec3& a, const glm
         equalSideLength = midDistance;
     }
 
-    const double height = sqrt(equalSideLength*equalSideLength - pow(midDistance, 2.0));
+    const double height = sqrt(equalSideLength*equalSideLength - midDistance*midDistance);
     return midPoint + height * normalizedTangent;
 }
 
-void Implicit::CurvatureTessellator::addNewFace(const glm::dvec3& pointA, const glm::dvec3& pointB, const glm::dvec3& pointC)
+Plane Implicit::CurvatureTessellator::getPlaneFromHalfEdge(const OpenMesh::SmartHalfedgeHandle& heh) const
+{
+    auto& point = mesh.point(heh.to());
+    return Plane(point, object.Normal(point), mesh.calc_edge_vector(heh));
+}
+
+OpenMesh::SmartFaceHandle Implicit::CurvatureTessellator::addNewFace(const glm::dvec3& pointA, const glm::dvec3& pointB, const glm::dvec3& pointC)
 {
     const double longestSideHere = Triangle{ pointA, pointB, pointC }.GetLongestSide();
     auto faceHandle = mesh.add_face(mesh.add_vertex(pointA), mesh.add_vertex(pointB), mesh.add_vertex(pointC));
@@ -107,6 +114,8 @@ void Implicit::CurvatureTessellator::addNewFace(const glm::dvec3& pointA, const 
         longestSide = longestSideHere;
         longestSidedFace = faceHandle;
     }
+
+    return faceHandle;
 }
 
 OpenMesh::SmartFaceHandle Implicit::CurvatureTessellator::addNewFace(const OpenMesh::VertexHandle& pointA, const OpenMesh::VertexHandle& pointB, const glm::dvec3& pointC)
@@ -143,43 +152,40 @@ bool Implicit::CurvatureTessellator::expandEdge(OpenMesh::SmartEdgeHandle edge, 
     if (!mesh.is_boundary(edge))
         throw std::runtime_error("Only boundary edges can be expanded");
 
-    Triangle edgeTriangle;
-    
     // Get the face corresponding to the boundary edge
-    OpenMesh::SmartFaceHandle face;
     auto heh = mesh.halfedge_handle(edge, 0);
     if(mesh.is_boundary(heh))
         heh = mesh.halfedge_handle(edge, 1);
 
-    face = mesh.face_handle(heh);
-#ifdef DEBUG
-    int idx = face.idx();
-#endif // DEBUG
-    edgeTriangle.a = mesh.point(edge.v0());
-    edgeTriangle.b = mesh.point(edge.v1());
-    edgeTriangle.c = mesh.point(mesh.to_vertex_handle(mesh.next_halfedge_handle(heh)));
+    const glm::dvec3 P0 = mesh.point(edge.v0());
+    const glm::dvec3 P1 = mesh.point(edge.v1());
 
-    const glm::dvec3 altitude = glm::normalize(edgeTriangle.GetAltitude(3)); 
-    const glm::dvec3 equilateralPoint = getEtp(edgeTriangle.a, edgeTriangle.b, altitude);
-    assert(std::abs(glm::distance(equilateralPoint, edgeTriangle.a) - glm::distance(edgeTriangle.a, edgeTriangle.b)) <= 0.001f);
-    assert(std::abs(glm::distance(equilateralPoint, edgeTriangle.b) - glm::distance(edgeTriangle.a, edgeTriangle.b)) <= 0.001f);
+    // const glm::dvec3 altitude = glm::normalize(edgeTriangle.GetAltitude(3)); 
+    const glm::dvec3 edgeMidpoint = mesh.calc_edge_midpoint(heh);
+    const glm::dvec3 edgeVector = mesh.calc_edge_vector(heh);
+    const glm::dvec3 altitude = glm::normalize(glm::cross(edgeVector, object.Normal(edgeMidpoint)));
+    const glm::dvec3 equilateralPoint = getEtp(P0, P1, altitude);
+    assert(std::abs(glm::distance(equilateralPoint, P0) - glm::distance(P0, P1)) <= 0.001f);
+    assert(std::abs(glm::distance(equilateralPoint, P1) - glm::distance(P0, P1)) <= 0.001f);
     
     glm::dvec3 newPoint = object.Project(equilateralPoint);
     assert(std::abs(object.Evaluate(newPoint)) <= 0.0001f);
     
     const float sideLength = getRoc(newPoint) * rho;
-    const glm::dvec3 isoScelesPoint = getItp(edgeTriangle.a, edgeTriangle.b, altitude, sideLength);
-    assert(std::abs(glm::distance(isoScelesPoint, edgeTriangle.a) - sideLength) <= 0.001f);
-    assert(std::abs(glm::distance(isoScelesPoint, edgeTriangle.b) - sideLength) <= 0.001f);
+    const auto interpolatedNormal = (object.Normal(edgeMidpoint) + object.Normal(equilateralPoint)) / 2.;
+    const glm::dvec3 isoScelesPoint = getItp(P0, P1, glm::normalize(glm::cross(edgeVector, interpolatedNormal)), sideLength);
+    assert(std::abs(glm::distance(isoScelesPoint, P0) - sideLength) <= 0.001f);
+    assert(std::abs(glm::distance(isoScelesPoint, P1) - sideLength) <= 0.001f);
     
     newPoint = object.Project(isoScelesPoint);
     assert(std::abs(object.Evaluate(newPoint)) <= 0.0001f);
+    //glm::dvec3 newPoint = equilateralPoint;
 
     {
         // Check 1: new edges and the expanded edge must have an angle of at least 45 degrees
         constexpr double requiredAngle = glm::radians(45.0);
-        if (glm::angle(glm::normalize(newPoint - edgeTriangle.a), glm::normalize(edgeTriangle.b - edgeTriangle.a)) <= requiredAngle ||
-            glm::angle(glm::normalize(newPoint - edgeTriangle.b), glm::normalize(edgeTriangle.a - edgeTriangle.b)) <= requiredAngle)
+        if (glm::angle(glm::normalize(newPoint - P0), glm::normalize(P1 - P0)) <= requiredAngle ||
+            glm::angle(glm::normalize(newPoint - P1), glm::normalize(P0 - P1)) <= requiredAngle)
             return false;
     }
 
@@ -191,7 +197,7 @@ bool Implicit::CurvatureTessellator::expandEdge(OpenMesh::SmartEdgeHandle edge, 
         const Triangle longestSidedTriangle(OpenMesh::SmartFaceHandle(longestSidedFace.idx(), &mesh), mesh);
         const double q = longestSidedTriangle.GetDistanceFrom(newPoint);
 
-        const Triangle newTriangle(edgeTriangle.a, edgeTriangle.b, newPoint);
+        const Triangle newTriangle(P0, P1, newPoint);
         const double newTriangleLongestSide = newTriangle.GetLongestSide();
         double longestSideNew = std::max(longestSide, newTriangleLongestSide);
 
@@ -218,6 +224,8 @@ bool Implicit::CurvatureTessellator::expandEdge(OpenMesh::SmartEdgeHandle edge, 
     }
 
     newFace = addNewFace(mesh.to_vertex_handle(heh), mesh.from_vertex_handle(heh), newPoint);
+    mesh.data(newFace).faceCreationMethod = FaceCreationMethod::IsoscelesGrowing;
+
     return true;
 }
 
@@ -246,11 +254,11 @@ bool Implicit::CurvatureTessellator::applyEarCutting(const OpenMesh::SmartFaceHa
         if (newFace == GlmMesh::FaceHandle()) {
             throw std::runtime_error("Failed to create new face");
         }
-        mesh.data(newFace).createdByEarCutting = true;
+        mesh.data(newFace).faceCreationMethod = FaceCreationMethod::EarCutting;
         earCut = true;
     }
 
-    if (glm::degrees(std::abs(mesh.calc_sector_angle(heh.prev()))) <= cutAngle)
+    if (glm::degrees(std::abs(mesh.calc_sector_angle(heh_prev))) <= cutAngle)
     {
         mesh.data(heh_prev.edge()).grownAlready = true;
         mesh.data(heh.edge()).grownAlready = true;
@@ -258,7 +266,7 @@ bool Implicit::CurvatureTessellator::applyEarCutting(const OpenMesh::SmartFaceHa
         if (newFace == GlmMesh::FaceHandle()) {
             throw std::runtime_error("Failed to create new face");
         }
-        mesh.data(newFace).createdByEarCutting = true;
+        mesh.data(newFace).faceCreationMethod = FaceCreationMethod::EarCutting;
         earCut = true;
     }
     

@@ -10,6 +10,7 @@
 #include "glmMeshAdaptor.hpp"
 #include "glmMeshKdTree.hpp"
 #include "Triangle.hpp"
+#include "Plane.hpp"
 
 namespace Implicit
 {
@@ -142,9 +143,15 @@ namespace Implicit
 		glm::dvec3 getItp(const glm::dvec3& a, const glm::dvec3& b, const glm::dvec3& normalizedTangent, double equalSideLength) const;
 
 		/**
+		 Returns a plane corresponding to the halfedge.
+		*/
+
+		Plane getPlaneFromHalfEdge(const OpenMesh::SmartHalfedgeHandle& heh) const;
+
+		/**
 		 Add a new face to the mesh
 		 */
-		void addNewFace(const glm::dvec3& pointA, const glm::dvec3& pointB, const glm::dvec3& pointC);
+		OpenMesh::SmartFaceHandle addNewFace(const glm::dvec3& pointA, const glm::dvec3& pointB, const glm::dvec3& pointC);
 
 		/**
 		 Add a new face to the mesh reusing two existing points

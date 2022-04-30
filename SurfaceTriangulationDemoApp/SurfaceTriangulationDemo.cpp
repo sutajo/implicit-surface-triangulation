@@ -355,8 +355,8 @@ void SurfaceTriangulationDemo::DrawUI()
 	ImGuiIO& io = GetIO();
 	BeginGroup();
 
-	SetNextWindowPos(ImVec2(0, 0));
-	SetNextWindowSize(ImVec2(0, 0));
+	SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+	SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 	Begin("Info");
 		if (CollapsingHeader("Performance", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -397,7 +397,7 @@ void SurfaceTriangulationDemo::DrawUI()
 			}
 			SameLine();
 			Checkbox("Show bounding box of the surface", &algorithmSettings.showBoundingBox);
-			if (Combo("Face visualization mode", (int*)&algorithmSettings.faceVisualization, "Id\0Normals\0Earcutting faces"))
+			if (Combo("Face visualization mode", (int*)&algorithmSettings.faceVisualization, "Id\0Normals\0Face creation method\0"))
 			{
 				if(algorithmSettings.faceVisualization == FaceVisualization::Normal)
 					tessellator->UpdateNormals();
@@ -533,7 +533,7 @@ void SurfaceTriangulationDemo::DrawMesh(Mesh& mesh, bool drawFill)
 
 void SurfaceTriangulationDemo::SetLineWidth()
 {
-	glLineWidth(std::max(15.0f / glm::distance(camera.GetEye(), camera.GetAt()), 1.0f));
+	glLineWidth(std::max(7.0f / glm::distance(camera.GetEye(), camera.GetAt()), 1.0f));
 }
 
 void SurfaceTriangulationDemo::UpdateMesh()

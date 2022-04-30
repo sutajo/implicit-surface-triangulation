@@ -35,6 +35,8 @@ private:
 	glm::mat4 worldMatrix;
 	glm::quat orientation{ glm::vec3(0.0, 0.0, 0.0) };
 
+	glm::vec3 MapFaceCreationMethodColor(FaceCreationMethod method) const;
+
 	static glm::vec3 FindCenter(const std::vector<Vertex>& vertices);
 	void UpdateWorldMat();
 public:

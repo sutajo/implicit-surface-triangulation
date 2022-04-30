@@ -24,20 +24,39 @@ namespace glm {
 	glm::dvec3& vectorize(glm::dvec3& x, double const& val);
 }
 
+enum class FaceCreationMethod
+{
+	Seed,
+	IsoscelesGrowing,
+	EarCutting,
+	SmallPolygonFilling,
+	SubdivisionOnBridges,
+	XFilling,
+	EarFilling,
+	ConvexPolygonFilling,
+	RelaxedEarFilling,
+	ConcaveVertexBisection
+};
+
+
 // OpenMesh vertex
-struct GlmVertex : public OpenMesh::DefaultTraits
+struct GlmAdaptor : public OpenMesh::DefaultTraits
 {
 	using Point = glm::dvec3;
 	using Normal = glm::dvec3;
+	VertexTraits
+	{
+		OpenMesh::VertexHandle closestNeighbour;
+	};
 	EdgeTraits
 	{
 		bool grownAlready = false;
 	};
 	FaceTraits
 	{
-		bool createdByEarCutting = false;
+		FaceCreationMethod faceCreationMethod;
 	};
 };
 
 // Concrete mesh type
-using GlmMesh = OpenMesh::TriMesh_ArrayKernelT<GlmVertex>;
+using GlmMesh = OpenMesh::TriMesh_ArrayKernelT<GlmAdaptor>;

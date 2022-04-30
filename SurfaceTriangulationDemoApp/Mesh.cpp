@@ -37,6 +37,16 @@ void Mesh::Render()
 	glBindVertexArray(0);
 }
 
+glm::vec3 Mesh::MapFaceCreationMethodColor(FaceCreationMethod method) const
+{
+	if (method == FaceCreationMethod::Seed)
+		return glm::vec3(1.0f, 0.3f, 0.0f);
+	else if (method == FaceCreationMethod::IsoscelesGrowing)
+		return glm::vec3(0.0f, 1.0f, 0.0f);
+	else if (method == FaceCreationMethod::EarCutting)
+		return glm::vec3(1.0f, 1.0f, 0.0f);
+}
+
 glm::vec3 Mesh::FindCenter(const std::vector<Vertex>& vertices)
 {
 	glm::vec3 center = std::accumulate(vertices.begin(), vertices.end(), glm::vec3(0.0f), [](const glm::vec3& acc, const Vertex& v) { return acc + v.Position; });
@@ -82,7 +92,7 @@ std::vector<Vertex> Mesh::GetMeshVertices(const GlmMesh& mesh, FaceVisualization
 					visualization == FaceVisualization::Normal ?
 						glm::vec3((mesh.normal(v) / 2. + 1.))
 					:
-						mesh.data(f).createdByEarCutting ? glm::vec3(1.0f, 1.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f)
+					 	MapFaceCreationMethodColor( mesh.data(f).faceCreationMethod )
 				  );
 			++index;
 		}

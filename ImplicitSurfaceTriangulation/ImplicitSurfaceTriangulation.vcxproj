@@ -185,6 +185,7 @@
     <ClInclude Include="Include\glmMeshKdTree.hpp" />
     <ClInclude Include="Include\ImplicitDifferentiated.hpp" />
     <ClInclude Include="Include\ImplicitSurfaceTriangulation.hpp" />
+    <ClInclude Include="Include\Plane.hpp" />
     <ClInclude Include="Include\Triangle.hpp" />
     <ClInclude Include="Include\VectorMath.hpp" />
   </ItemGroup>
@@ -210,6 +211,7 @@
     <ClCompile Include="ImplicitSystem\src\ImplicitTranslate.cpp" />
     <ClCompile Include="ImplicitSystem\src\ImplicitUnion.cpp" />
     <ClCompile Include="ImplicitSystem\src\VecPrint.cpp" />
+    <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="VectorMath.cpp" />
   </ItemGroup>
