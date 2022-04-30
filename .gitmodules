@@ -1,5 +1,5 @@
-[submodule "ImplicitSurfaceTriangulation\\ImplicitSystem"]
-	path = ImplicitSurfaceTriangulation\\ImplicitSystem
+[submodule "ImplicitSurfaceTriangulation/ImplicitSystem"]
+	path = ImplicitSurfaceTriangulation/ImplicitSystem
 	url = https://github.com/sutajo/ImplicitSystem
 [submodule "ImplicitSurfaceTriangulation/autodiff"]
 	path = ImplicitSurfaceTriangulation/autodiff
