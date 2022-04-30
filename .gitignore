@@ -4,3 +4,4 @@ ImplicitSurfaceTriangulation/x64
 ImplicitSurfaceTriangulation/vcpkg_installed
 SurfaceTriangulationDemoApp/x64
 SurfaceTriangulationDemoApp/vcpkg_installed
+SurfaceTriangulationDemoApp/imgui.ini
