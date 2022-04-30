@@ -1,0 +1,3 @@
+[submodule "ImplicitSurfaceTriangulation\\ImplicitSystem"]
+	path = ImplicitSurfaceTriangulation\\ImplicitSystem
+	url = https://github.com/sutajo/ImplicitSystem
