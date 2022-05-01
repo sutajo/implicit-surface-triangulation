@@ -416,6 +416,7 @@ void SurfaceTriangulationDemo::DrawUI()
 			Text("Longest triangle side: %f", tessellator->GetLongestTriangleSide());
 			if (Button("Reset orientation"))
 			{
+				closestNeighbours.ResetRotation();
 				mesh.ResetRotation();
 				bb.ResetRotation();
 			}
