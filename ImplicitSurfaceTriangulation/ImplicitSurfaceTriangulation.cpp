@@ -277,7 +277,8 @@ bool Implicit::CurvatureTessellator::applyEarCutting(const OpenMesh::SmartFaceHa
 
 bool Implicit::CurvatureTessellator::isNeighbour(OpenMesh::SmartHalfedgeHandle toHalfedge, OpenMesh::VertexHandle vertex)
 {
-    const bool isConvex = mesh.calc_sector_angle(toHalfedge) <= glm::radians(180.0);
+    const double sectorAngle = mesh.calc_sector_angle(toHalfedge);
+    const bool isConvex = 0.0 <= sectorAngle && sectorAngle <= glm::radians(180.0);
     const auto planePoint = mesh.point(toHalfedge.to());
     const auto pointNormal = object.Normal(planePoint);
     const Plane pv1{ planePoint, pointNormal, mesh.calc_edge_vector(toHalfedge) };
@@ -328,7 +329,17 @@ void Implicit::CurvatureTessellator::computeClosestNeighbours()
         searchParams.sorted = true;
         OpenMesh::VertexHandle closestNeighbour;
 #ifdef DEBUG
-        std::cout << heh.opp().face().idx() << "\n";
+        int faceIdx = heh.opp().face().idx();
+        if (faceIdx == 85)
+        {
+            gapKdTree.radiusSearch(&mesh.point(heh.to())[0], r, matches, searchParams);
+            for (auto& match : matches)
+            {
+                OpenMesh::VertexHandle v(match.first);
+                v = mesh.data(v).connectedVertex;
+                std::cout << v.idx() << " - " << match.second << "\n";
+            }
+        }
 #endif // DEBUG
         do
         {
