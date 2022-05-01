@@ -21,6 +21,7 @@ namespace OpenMesh {
 // Functions for glm::vec3 that OpenMesh uses
 namespace glm {
 	double norm(const glm::dvec3& x);
+	double sqrnorm(const glm::dvec3& x);
 	glm::dvec3& vectorize(glm::dvec3& x, double const& val);
 }
 
@@ -47,6 +48,7 @@ struct GlmAdaptor : public OpenMesh::DefaultTraits
 	VertexTraits
 	{
 		OpenMesh::VertexHandle closestNeighbour;
+		OpenMesh::VertexHandle connectedVertex;
 	};
 	EdgeTraits
 	{
@@ -60,3 +62,5 @@ struct GlmAdaptor : public OpenMesh::DefaultTraits
 
 // Concrete mesh type
 using GlmMesh = OpenMesh::TriMesh_ArrayKernelT<GlmAdaptor>;
+
+OpenMesh::SmartHalfedgeHandle FindBoundaryHalfEdge(const GlmMesh& mesh);

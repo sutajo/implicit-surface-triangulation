@@ -118,10 +118,8 @@ OpenMesh::SmartFaceHandle Implicit::CurvatureTessellator::addNewFace(const glm::
     return faceHandle;
 }
 
-OpenMesh::SmartFaceHandle Implicit::CurvatureTessellator::addNewFace(const OpenMesh::VertexHandle& pointA, const OpenMesh::VertexHandle& pointB, const glm::dvec3& pointC)
+OpenMesh::SmartFaceHandle Implicit::CurvatureTessellator::addNewFace(const OpenMesh::VertexHandle& pointA, const OpenMesh::VertexHandle& pointB, const glm::dvec3& pointC, double newTriangleLongestSide)
 {
-    const double longestSideHere = Triangle{ mesh.point(pointA), mesh.point(pointB), pointC }.GetLongestSide();
-    
     auto newVertex = mesh.add_vertex(pointC);
     if (newVertex == GlmMesh::VertexHandle())
         throw std::runtime_error("Failed to create new vertex");
@@ -134,9 +132,9 @@ OpenMesh::SmartFaceHandle Implicit::CurvatureTessellator::addNewFace(const OpenM
 
     kdTreeIsDirty = true;
 
-    if (longestSideHere > longestSide)
+    if (newTriangleLongestSide > longestSide)
     {
-        longestSide = longestSideHere;
+        longestSide = newTriangleLongestSide;
         longestSidedFace = faceHandle;
     }
 
@@ -223,7 +221,11 @@ bool Implicit::CurvatureTessellator::expandEdge(OpenMesh::SmartEdgeHandle edge, 
         }
     }
 
-    newFace = addNewFace(mesh.to_vertex_handle(heh), mesh.from_vertex_handle(heh), newPoint);
+    const auto pointA = mesh.to_vertex_handle(heh);
+    const auto pointB = mesh.from_vertex_handle(heh);
+    const double longestSideHere = Triangle{ mesh.point(pointA), mesh.point(pointB), newPoint }.GetLongestSide();
+
+    newFace = addNewFace(pointA, pointB, newPoint, longestSideHere);
     mesh.data(newFace).faceCreationMethod = FaceCreationMethod::IsoscelesGrowing;
 
     return true;
@@ -273,6 +275,99 @@ bool Implicit::CurvatureTessellator::applyEarCutting(const OpenMesh::SmartFaceHa
     return earCut;
 }
 
+bool Implicit::CurvatureTessellator::isNeighbour(OpenMesh::SmartHalfedgeHandle toHalfedge, OpenMesh::VertexHandle vertex)
+{
+    const bool isConvex = mesh.calc_sector_angle(toHalfedge) <= glm::radians(180.0);
+    const auto planePoint = mesh.point(toHalfedge.to());
+    const auto pointNormal = object.Normal(planePoint);
+    const Plane pv1{ planePoint, pointNormal, mesh.calc_edge_vector(toHalfedge) };
+    const Plane pv2{ planePoint, pointNormal, mesh.calc_edge_vector(toHalfedge.next())  };
+    const bool isAbovePv1 = pv1.IsAbove( mesh.point(vertex),  mesh.calc_edge_length(toHalfedge) / 10.0 );
+    const bool isAbovePv2 = pv2.IsAbove( mesh.point(vertex),  mesh.calc_edge_length(toHalfedge.next()) / 10.0 );
+    if (isConvex) {
+        return isAbovePv1 && isAbovePv2;
+    }
+    else {
+        return isAbovePv1 || isAbovePv2;
+    }
+
+}
+
+bool Implicit::CurvatureTessellator::isBridge(OpenMesh::VertexHandle vertex)
+{
+    auto closestNeigbour = mesh.data(vertex).closestNeighbour;
+    return mesh.data(closestNeigbour).closestNeighbour == vertex;
+}
+
+void Implicit::CurvatureTessellator::computeClosestNeighbours()
+{
+    OpenMesh::SmartHalfedgeHandle heh_start = FindBoundaryHalfEdge( mesh );
+
+    GlmMesh gap;
+    auto heh = heh_start;
+    do
+    {
+        auto heh_to = heh.to();
+        auto v = gap.add_vertex(mesh.point(heh_to));
+        mesh.data(v).connectedVertex = heh_to;
+
+        heh = heh.next();
+    } while (heh != heh_start);
+
+    GlmVec3MeshKdTreeAdaptor gapKdTreeAdaptor{ gap };
+    GlmMeshKdTree gapKdTree{ 3, gapKdTreeAdaptor };
+
+    gapKdTree.buildIndex();
+
+    heh = heh_start;
+    do
+    {
+        double r = mesh.calc_edge_length(heh) * 2.;
+        std::vector<std::pair<unsigned int, double>> matches;
+        nanoflann::SearchParams searchParams;
+        searchParams.sorted = true;
+        OpenMesh::VertexHandle closestNeighbour;
+#ifdef DEBUG
+        std::cout << heh.opp().face().idx() << "\n";
+#endif // DEBUG
+        do
+        {
+            matches.clear();
+            gapKdTree.radiusSearch(&mesh.point(heh.to())[0], r, matches, searchParams);
+
+            for (auto& match : matches)
+            {
+                OpenMesh::VertexHandle v(match.first);
+                v = mesh.data(v).connectedVertex;
+                if (isNeighbour(heh, v))
+                {
+                    closestNeighbour = v;
+                    break;
+                }
+            }
+
+            if (matches.size() == mesh.n_vertices())
+            {
+                break;
+            } 
+            else if (!closestNeighbour.is_valid())
+            {
+                r *= 2.;
+            }
+        } while (!closestNeighbour.is_valid());
+
+#ifdef DEBUG
+        std::cout << mesh.data(closestNeighbour).connectedVertex.idx() << "\n";
+#endif // DEBUG
+
+        mesh.data(heh.to()).closestNeighbour = closestNeighbour;
+
+        heh = heh.next();
+    } while (heh != heh_start);
+
+    closestNeighboursComputed = true;
+}
+
 bool Implicit::CurvatureTessellator::RunIterations(int iterations)
 {
     bool meshChanged = false;
@@ -295,6 +390,9 @@ bool Implicit::CurvatureTessellator::RunIterations(int iterations)
             ++iteration;
         }
     }
+
+    if (!meshChanged && !closestNeighboursComputed)
+        computeClosestNeighbours();
 
     if (visitor)
         visitor->get().IterationEnded(meshChanged);

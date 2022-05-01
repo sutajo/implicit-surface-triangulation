@@ -93,6 +93,7 @@ void SurfaceTriangulationDemo::onMotion(int x, int y)
 				instance->camera.MouseMove(dx, dy);
 			else {
 				instance->mesh.RotateInCameraSpace(dx, dy, instance->camera);
+				instance->closestNeighbours.RotateInCameraSpace(dx, dy, instance->camera);
 				instance->bb.RotateInCameraSpace(dx, dy, instance->camera);
 			}
 		}
@@ -176,7 +177,10 @@ void SurfaceTriangulationDemo::IterationEnded(bool meshChanged)
 		}
 	}
 	else
+	{
 		pendingIterations = 0;
+		UpdateMesh();
+	}
 }
 
 void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
@@ -201,17 +205,17 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 	auto glmMesh = tessellator->GetMesh();
 	auto triangle = Triangle{ glmMesh.point(vertices[0]), glmMesh.point(vertices[1]), glmMesh.point(vertices[2]) };
 
-	ImGui::Text("A: (%3f, %3f, %3f)\nB: (%3f, %3f, %3f)\nC: (%3f, %3f, %3f)",
-		triangle.a.x, triangle.a.y, triangle.a.z,
-		triangle.b.x, triangle.b.y, triangle.b.z,
-		triangle.c.x, triangle.c.y, triangle.c.z
+	ImGui::Text("A (Idx %d): (%3f, %3f, %3f)\nB (Idx %d): (%3f, %3f, %3f)\nC (Idx %d): (%3f, %3f, %3f)",
+		vertices[0].idx(), triangle.a.x, triangle.a.y, triangle.a.z,
+		vertices[1].idx(), triangle.b.x, triangle.b.y, triangle.b.z,
+		vertices[2].idx(), triangle.c.x, triangle.c.y, triangle.c.z
 	);
 
 	ImGui::Text("Mouse Left: drag to measure distance,\nMouse Right: drag to scroll, click for context menu.");
 
 	// Using InvisibleButton() as a convenience 1) it will advance the layout cursor and 2) allows us to use IsItemHovered()/IsItemActive()
 	ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();      // ImDrawList API uses screen coordinates!
-	ImVec2 canvas_sz = ImVec2(GRID_STEP*gridSize, GRID_STEP * gridSize);   // Resize canvas to what's available
+	ImVec2 canvas_sz = ImVec2(1.7 * GRID_STEP*gridSize, GRID_STEP * gridSize);   // Resize canvas to what's available
 	if (canvas_sz.x < 50.0f) canvas_sz.x = 50.0f;
 	if (canvas_sz.y < 50.0f) canvas_sz.y = 50.0f;
 	ImVec2 canvas_p1 = ImVec2(canvas_p0.x + canvas_sz.x, canvas_p0.y + canvas_sz.y);
@@ -315,23 +319,43 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 		}
 	};
 
+	auto find_boundary_halfedge = [&](OpenMesh::VertexHandle v1, OpenMesh::VertexHandle v2)
+	{
+		OpenMesh::HalfedgeHandle heh = glmMesh.find_halfedge(v1, v2);
+		if (heh.is_valid()) {
+			if (glmMesh.is_boundary(heh))
+				return heh;
+			else
+				return glmMesh.opposite_halfedge_handle(heh);
+		}
+		else {
+			return OpenMesh::HalfedgeHandle();
+		}
+	};
+
 	auto boundaryColor = ImColor(243, 255, 18);
 	auto innerColor = ImColor(77, 250, 2); 
 
 	// Triangle edges
-	draw_list->AddLine(gridTriangleA, gridTriangleB, !glmMesh.data(find_edge(vertices[0], vertices[1])).grownAlready ? boundaryColor : innerColor, 3.0f);
-	draw_list->AddLine(gridTriangleB, gridTriangleC, !glmMesh.data(find_edge(vertices[1], vertices[2])).grownAlready ? boundaryColor : innerColor, 3.0f);
-	draw_list->AddLine(gridTriangleA, gridTriangleC, !glmMesh.data(find_edge(vertices[0], vertices[2])).grownAlready ? boundaryColor : innerColor, 3.0f);
+	draw_list->AddLine(gridTriangleA, gridTriangleB, glmMesh.is_boundary(find_edge(vertices[0], vertices[1])) ? boundaryColor : innerColor, 3.0f);
+	draw_list->AddLine(gridTriangleB, gridTriangleC, glmMesh.is_boundary(find_edge(vertices[1], vertices[2])) ? boundaryColor : innerColor, 3.0f);
+	draw_list->AddLine(gridTriangleA, gridTriangleC, glmMesh.is_boundary(find_edge(vertices[0], vertices[2])) ? boundaryColor : innerColor, 3.0f);
 
 	// Triangle side lengths
-	std::string distStr = std::to_string(std::get<0>(sides));
+	std::string distStr = std::format("Idx: {}, Len: {:.4f}", find_boundary_halfedge(vertices[0], vertices[1]).idx(), std::get<0>(sides));
 	auto size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, FLT_MAX, distStr.c_str());
-	draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.5f, ImVec2((gridTriangleA.x + gridTriangleB.x) / 2.f, (gridTriangleA.y + gridTriangleB.y) / 2.f - size.y * 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
-	distStr = std::to_string(std::get<1>(sides));
+	draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.5f, ImVec2((gridTriangleA.x + gridTriangleB.x) / 2.f - size.x / 2.f, (gridTriangleA.y + gridTriangleB.y) / 2.f - size.y * 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
+	distStr = std::format("Idx: {}, Len: {:.4f}", find_boundary_halfedge(vertices[1], vertices[2]).idx(), std::get<1>(sides));
 	draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.5f, ImVec2((gridTriangleB.x + gridTriangleC.x) / 2.f + 15.f, (gridTriangleB.y + gridTriangleC.y) / 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
 	size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, FLT_MAX, distStr.c_str());
-	distStr = std::to_string(std::get<2>(sides));
-	draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.5f, ImVec2((gridTriangleA.x + gridTriangleC.x) / 2.f - size.x*2.f, (gridTriangleA.y + gridTriangleC.y) / 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
+	distStr = std::format("Idx: {}, Len: {:.4f}", find_boundary_halfedge(vertices[0], vertices[2]).idx(), std::get<2>(sides));
+	draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.5f, ImVec2((gridTriangleA.x + gridTriangleC.x) / 2.f - size.x*1.6f, (gridTriangleA.y + gridTriangleC.y) / 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str()); 
+
+	distStr = std::format("{}", vertices[0].idx());
+	size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, FLT_MAX, distStr.c_str());
+	draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.5f, ImVec2(gridTriangleA.x - size.x * 2.0f, gridTriangleA.y - 15.0f), IM_COL32(59, 222, 255, 255), distStr.c_str());
+	draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.5f, ImVec2(gridTriangleB.x + 10.0f , gridTriangleB.y - 15.0f), IM_COL32(59, 222, 255, 255), std::format("{}", vertices[1].idx()).c_str());
+	draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.5f, ImVec2(gridTriangleC.x - 5.0f  , gridTriangleC.y + 10.0f), IM_COL32(59, 222, 255, 255), std::format("{}", vertices[2].idx()).c_str());
 
 	// Lines
 	for (int n = 0; n < points.Size; n += 2)
@@ -421,7 +445,7 @@ void SurfaceTriangulationDemo::DrawUI()
 			if (CollapsingHeader("Input", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				PushItemWidth(150);
-				if (SliderFloat("Triangle side length / local radius of curvature (Rho)", &algorithmSettings.rho, 0.0f, 0.2f) && tessellator)
+				if (SliderFloat("Triangle side length / local radius of curvature (Rho)", &algorithmSettings.rho, 0.0f, 0.4f) && tessellator)
 				{
 					tessellator->SetRho(algorithmSettings.rho);
 				}
@@ -505,29 +529,33 @@ void SurfaceTriangulationDemo::DrawUI()
 	EndGroup();
 }
 
-void SurfaceTriangulationDemo::DrawMesh(Mesh& mesh, bool drawFill)
+void SurfaceTriangulationDemo::DrawMesh(Mesh& mesh, bool drawLines, bool drawFill)
 {
 	auto& world = mesh.GetWorldMat();
 	instance->meshShader.enable();
 	instance->meshShader.setUniformMat4("MVP", instance->camera.GetViewProj() * world);
 	instance->meshShader.setUniformMat4("world", world);
 	instance->meshShader.setUniformMat4("worldIT", glm::inverse(glm::transpose(world)));
-	if (drawFill)
+	if (drawFill || drawLines)
 	{
 		instance->meshShader.setUniform1i("uUseDiffuseShading", false);
 		instance->meshShader.setUniform3f("uColor", 0.8f, 0.8f, 0.8f);
 		instance->meshShader.setUniform1i("uUniformColor", false);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		mesh.Render();
+		drawLines ? mesh.RenderAsLines() : mesh.Render();
 	}
 	else
 		instance->meshShader.setUniform1i("uUseDiffuseShading", true);
 
-	instance->meshShader.setUniform3f("uColor", 0.3f, 0.8f, 0.8f);
-	//instance->meshShader.setUniform3f("uColor", 245 / 255.f, 182 / 255.f, 66 / 255.f);
-	instance->meshShader.setUniform1i("uUniformColor", true);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	mesh.Render();
+	if (!drawLines)
+	{
+		instance->meshShader.setUniform3f("uColor", 0.3f, 0.8f, 0.8f);
+		//instance->meshShader.setUniform3f("uColor", 245 / 255.f, 182 / 255.f, 66 / 255.f);
+		instance->meshShader.setUniform1i("uUniformColor", true);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		drawLines ? mesh.RenderAsLines() : mesh.Render();
+	}
+
 	meshShader.disable();
 }
 
@@ -539,6 +567,10 @@ void SurfaceTriangulationDemo::SetLineWidth()
 void SurfaceTriangulationDemo::UpdateMesh()
 {
 	mesh.Update(mesh.GetMeshVertices(tessellator->GetMesh(), algorithmSettings.faceVisualization), GetSelectedObject().GetCenterVertex());
+	if (tessellator->ClosestNeighboursComputed())
+	{
+		closestNeighbours.Update(mesh.GetLineVertices(tessellator->GetMesh()), GetSelectedObject().GetCenterVertex());
+	}
 }
 
 void SurfaceTriangulationDemo::SetTessellatedObect(Implicit::Object &object)
@@ -610,15 +642,19 @@ void SurfaceTriangulationDemo::onDisplay()
 	instance->RunPendingIterations();
 
 	// Drawing
-	instance->DrawMesh(instance->mesh);
+	instance->DrawMesh(instance->mesh, false);
 	instance->DrawUI();
 
 	if (instance->algorithmSettings.showBoundingBox)
 	{
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
-		instance->DrawMesh(instance->bb, false);
+		instance->DrawMesh(instance->bb, false, false);
 		glDisable(GL_CULL_FACE);
+	}
+	if (instance->tessellator->ClosestNeighboursComputed())
+	{
+		instance->DrawMesh(instance->closestNeighbours, true, false);
 	}
 
 	// ImGUI frame end

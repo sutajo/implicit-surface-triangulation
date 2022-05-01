@@ -20,6 +20,7 @@ struct AlgorithmVisualizationSettings
 	bool freeCamera = false;
 
 	float rho = 0.1f;
+	float maxSideLength = 0.0;
 	int selectedObjectIndex = 0;
 	int nIterations = 15;
 	bool realTimeUpdate = true;
@@ -41,6 +42,9 @@ private:
 	// Triangle mesh and shader
 	Mesh mesh;
 	Shader meshShader;
+
+	// Lines connecting closest triangles
+	Mesh closestNeighbours;
 
 	// Bounding box
 	Box bb{ 1.0f, 1.0f, 1.0f };
@@ -77,7 +81,7 @@ private:
 	virtual void IterationEnded(bool meshChanged) override;
 
 	void DrawUI();
-	void DrawMesh(Mesh& mesh, bool drawFill = true);
+	void DrawMesh(Mesh& mesh, bool drawLines, bool drawFill = true);
 	void SetLineWidth();
 
 	void UpdateMesh();

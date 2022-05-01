@@ -37,6 +37,13 @@ void Mesh::Render()
 	glBindVertexArray(0);
 }
 
+void Mesh::RenderAsLines()
+{
+	glBindVertexArray(vertexArray);
+	glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(numVertices));
+	glBindVertexArray(0);
+}
+
 glm::vec3 Mesh::MapFaceCreationMethodColor(FaceCreationMethod method) const
 {
 	if (method == FaceCreationMethod::Seed)
@@ -96,6 +103,35 @@ std::vector<Vertex> Mesh::GetMeshVertices(const GlmMesh& mesh, FaceVisualization
 				  );
 			++index;
 		}
+
+	return vertices;
+}
+
+std::vector<Vertex> Mesh::GetLineVertices(const GlmMesh& mesh) const
+{
+	std::vector<Vertex> vertices;
+	vertices.reserve(mesh.n_edges());
+
+	auto heh_start = FindBoundaryHalfEdge(mesh);
+	auto heh = heh_start;
+
+	do
+	{
+		const auto closestNeighbour = mesh.data(heh.to()).closestNeighbour;
+		const bool is_bridge = mesh.data(closestNeighbour).closestNeighbour == heh.to();
+
+		Vertex v1;
+		v1.Position = mesh.point( heh.to() );
+		v1.Color = is_bridge ? glm::vec3(1.0f, 223.0f / 255.0f, 0.0f) : glm::vec3(1.0f, 140.0f / 255.0f, 0.0f);
+		vertices.push_back(v1);
+
+		Vertex v2;
+		v2.Position = mesh.point(closestNeighbour);
+		v2.Color = is_bridge ? glm::vec3(1.0f, 223.0f / 255.0f, 0.0f) : glm::vec3(1.0f, 1.0f, 0.0f);
+		vertices.push_back(v2);
+
+		heh = heh.next();
+	} while (heh != heh_start);
 
 	return vertices;
 }

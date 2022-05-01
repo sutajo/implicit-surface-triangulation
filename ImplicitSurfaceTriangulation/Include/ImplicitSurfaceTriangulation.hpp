@@ -91,6 +91,11 @@ namespace Implicit
 		 */
 		void UpdateNormals() { mesh.update_normals(); }
 
+		/**
+		 Returns whether closest neighbour relationships have been computed for boundary vertices
+		 */
+		bool ClosestNeighboursComputed() { return closestNeighboursComputed; }
+
 	private:
 		/**
 		 Implicit object
@@ -106,6 +111,11 @@ namespace Implicit
 		 Rho parameter 
 		 */
 		double rho = 0.2;
+
+		/**
+		 Max triangle side length
+		 */
+		std::optional<double> maxSideLength;
 
 		/**
 		 Generated mesh
@@ -145,7 +155,6 @@ namespace Implicit
 		/**
 		 Returns a plane corresponding to the halfedge.
 		*/
-
 		Plane getPlaneFromHalfEdge(const OpenMesh::SmartHalfedgeHandle& heh) const;
 
 		/**
@@ -156,7 +165,7 @@ namespace Implicit
 		/**
 		 Add a new face to the mesh reusing two existing points
 		 */
-		OpenMesh::SmartFaceHandle addNewFace(const OpenMesh::VertexHandle &pointA, const OpenMesh::VertexHandle &pointB, const glm::dvec3& pointC);
+		OpenMesh::SmartFaceHandle addNewFace(const OpenMesh::VertexHandle &pointA, const OpenMesh::VertexHandle &pointB, const glm::dvec3& pointC, double newTriangleLongestSide);
 
 		/**
 		 Longest triangle side in the whole mesh
@@ -173,10 +182,29 @@ namespace Implicit
 		 */
 		bool expandEdge(OpenMesh::SmartEdgeHandle edge, OpenMesh::SmartFaceHandle &newFace);
 
-
 		/*
 		* Apply ear cutting to the a newly created face
 		*/
 		bool applyEarCutting(const OpenMesh::SmartFaceHandle& newFace);
+
+		/*
+		* Compute closest neighbour relationships for the filling phase
+		*/
+		void computeClosestNeighbours();
+
+		/*
+		* Stores whether closest neigbours have been computed
+		*/
+		bool closestNeighboursComputed = false;
+
+		/*
+		* Is the vertex a neigbour of the "to" vertex of the halfedge?
+		*/
+		bool isNeighbour(OpenMesh::SmartHalfedgeHandle toHalfedge, OpenMesh::VertexHandle vertex);
+
+		/*
+		* Is the vertex part of a bridge?
+		*/
+		bool isBridge(OpenMesh::VertexHandle vertex);
 	};
 };

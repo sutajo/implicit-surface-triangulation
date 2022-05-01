@@ -18,7 +18,7 @@ public:
 	* Determines if a point is above (i.e. in front of) a plane.
 	* If offset is greater than zero, only return true for points that are also at least offset far away from the plane. 
 	*/
-	bool IsAbove(const glm::dvec3& point, double offset = 0.0);
+	bool IsAbove(const glm::dvec3& point, double offset = 0.0) const;
 private:
 	const glm::dvec3& m_point;
 	const glm::dvec3  m_normal;
