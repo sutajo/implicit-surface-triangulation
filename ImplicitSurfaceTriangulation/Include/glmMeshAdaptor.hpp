@@ -8,7 +8,7 @@
 // OpenMesh vertex traits for glm::vec3
 namespace OpenMesh {
 	template<>
-	struct OpenMesh::vector_traits<glm::dvec3>
+	struct vector_traits<glm::dvec3>
 	{
 		using vector_type = glm::dvec3;
 		using value_type = glm::dvec3::value_type;
