@@ -358,7 +358,7 @@ void Implicit::CurvatureTessellator::computeClosestNeighbours()
                 }
             }
 
-            if (matches.size() == mesh.n_vertices())
+            if (matches.size() == gap.n_vertices())
             {
                 break;
             }
