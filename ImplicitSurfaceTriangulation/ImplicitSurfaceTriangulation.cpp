@@ -323,7 +323,7 @@ void Implicit::CurvatureTessellator::computeClosestNeighbours()
     heh = heh_start;
     do
     {
-        double r = mesh.calc_edge_length(heh) * 2.;
+        double r = mesh.calc_edge_length(heh);
         std::vector<std::pair<unsigned int, double>> matches;
         nanoflann::SearchParams searchParams;
         searchParams.sorted = true;
@@ -343,6 +343,7 @@ void Implicit::CurvatureTessellator::computeClosestNeighbours()
 #endif // DEBUG
         do
         {
+            r *= 2.;
             matches.clear();
             gapKdTree.radiusSearch(&mesh.point(heh.to())[0], r, matches, searchParams);
 
@@ -360,10 +361,6 @@ void Implicit::CurvatureTessellator::computeClosestNeighbours()
             if (matches.size() == mesh.n_vertices())
             {
                 break;
-            } 
-            else if (!closestNeighbour.is_valid())
-            {
-                r *= 2.;
             }
         } while (!closestNeighbour.is_valid());
 
