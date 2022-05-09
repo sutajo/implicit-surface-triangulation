@@ -186,7 +186,6 @@ void SurfaceTriangulationDemo::IterationEnded(bool meshChanged)
 void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 {
 	const float GRID_STEP = 64.0f;
-	const int gridSize = 6;
 	
 	if (!ImGui::Begin("Face view", p_open, ImGuiWindowFlags_AlwaysAutoResize))
 	{
@@ -215,7 +214,7 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 
 	// Using InvisibleButton() as a convenience 1) it will advance the layout cursor and 2) allows us to use IsItemHovered()/IsItemActive()
 	ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();      // ImDrawList API uses screen coordinates!
-	ImVec2 canvas_sz = ImVec2(1.7 * GRID_STEP*gridSize, GRID_STEP * gridSize);   // Resize canvas to what's available
+	ImVec2 canvas_sz = ImVec2(GRID_STEP*10, GRID_STEP*7);   // Resize canvas to what's available
 	if (canvas_sz.x < 50.0f) canvas_sz.x = 50.0f;
 	if (canvas_sz.y < 50.0f) canvas_sz.y = 50.0f;
 	ImVec2 canvas_p1 = ImVec2(canvas_p0.x + canvas_sz.x, canvas_p0.y + canvas_sz.y);
@@ -341,21 +340,23 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 	draw_list->AddLine(gridTriangleB, gridTriangleC, glmMesh.is_boundary(find_edge(vertices[1], vertices[2])) ? boundaryColor : innerColor, 3.0f);
 	draw_list->AddLine(gridTriangleA, gridTriangleC, glmMesh.is_boundary(find_edge(vertices[0], vertices[2])) ? boundaryColor : innerColor, 3.0f);
 
+	auto fontSize = ImGui::GetFontSize() * 1.5f;
+
 	// Triangle side lengths
 	std::string distStr = std::format("Idx: {}, Len: {:.4f}", find_boundary_halfedge(vertices[0], vertices[1]).idx(), std::get<0>(sides));
-	auto size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, FLT_MAX, distStr.c_str());
-	draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.5f, ImVec2((gridTriangleA.x + gridTriangleB.x) / 2.f - size.x / 2.f, (gridTriangleA.y + gridTriangleB.y) / 2.f - size.y * 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
+	auto size = ImGui::GetFont()->CalcTextSizeA(fontSize, FLT_MAX, FLT_MAX, distStr.c_str());
+	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2((gridTriangleA.x + gridTriangleB.x) / 2.f - size.x / 2.f, (gridTriangleA.y + gridTriangleB.y) / 2.f - size.y * 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
 	distStr = std::format("Idx: {}, Len: {:.4f}", find_boundary_halfedge(vertices[1], vertices[2]).idx(), std::get<1>(sides));
-	draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.5f, ImVec2((gridTriangleB.x + gridTriangleC.x) / 2.f + 15.f, (gridTriangleB.y + gridTriangleC.y) / 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
-	size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, FLT_MAX, distStr.c_str());
+	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2((gridTriangleB.x + gridTriangleC.x) / 2.f + 15.f, (gridTriangleB.y + gridTriangleC.y) / 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
+	size = ImGui::GetFont()->CalcTextSizeA(fontSize, FLT_MAX, FLT_MAX, distStr.c_str());
 	distStr = std::format("Idx: {}, Len: {:.4f}", find_boundary_halfedge(vertices[0], vertices[2]).idx(), std::get<2>(sides));
-	draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.5f, ImVec2((gridTriangleA.x + gridTriangleC.x) / 2.f - size.x*1.6f, (gridTriangleA.y + gridTriangleC.y) / 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str()); 
+	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2((gridTriangleA.x + gridTriangleC.x) / 2.f - size.x - 10.f, (gridTriangleA.y + gridTriangleC.y) / 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
 
 	distStr = std::format("{}", vertices[0].idx());
-	size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, FLT_MAX, distStr.c_str());
-	draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.5f, ImVec2(gridTriangleA.x - size.x * 2.0f, gridTriangleA.y - 15.0f), IM_COL32(59, 222, 255, 255), distStr.c_str());
-	draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.5f, ImVec2(gridTriangleB.x + 10.0f , gridTriangleB.y - 10.0f), IM_COL32(59, 222, 255, 255), std::format("{}", vertices[1].idx()).c_str());
-	draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize() * 1.5f, ImVec2(gridTriangleC.x - 5.0f  , gridTriangleC.y + 10.0f), IM_COL32(59, 222, 255, 255), std::format("{}", vertices[2].idx()).c_str());
+	size = ImGui::GetFont()->CalcTextSizeA(fontSize, FLT_MAX, FLT_MAX, distStr.c_str());
+	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2(gridTriangleA.x - size.x * 2.0f, gridTriangleA.y - 15.0f), IM_COL32(59, 222, 255, 255), distStr.c_str());
+	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2(gridTriangleB.x + 10.0f , gridTriangleB.y - 10.0f), IM_COL32(59, 222, 255, 255), std::format("{}", vertices[1].idx()).c_str());
+	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2(gridTriangleC.x - 5.0f  , gridTriangleC.y + 10.0f), IM_COL32(59, 222, 255, 255), std::format("{}", vertices[2].idx()).c_str());
 
 	// Lines
 	for (int n = 0; n < points.Size; n += 2)
