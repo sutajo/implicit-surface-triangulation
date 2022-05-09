@@ -50,14 +50,14 @@ void Implicit::CurvatureTessellator::ComputeMesh()
     
 }
 
-const GlmMesh& Implicit::CurvatureTessellator::GetMesh()
+const GlmTriMesh& Implicit::CurvatureTessellator::GetMesh()
 {
     return mesh;
 }
 
 const Aabb Implicit::CurvatureTessellator::ComputeBoundingBox()
 {
-    GlmMeshKdTree::BoundingBox bb;
+    GlmTriMeshKdTree::BoundingBox bb;
     kdTree.computeBoundingBox(bb);
     Aabb aabb;
     auto min = glm::dvec3(bb[0].low, bb[1].low, bb[2].low);
@@ -102,7 +102,7 @@ OpenMesh::SmartFaceHandle Implicit::CurvatureTessellator::addNewFace(const glm::
 {
     const double longestSideHere = Triangle{ pointA, pointB, pointC }.GetLongestSide();
     auto faceHandle = mesh.add_face(mesh.add_vertex(pointA), mesh.add_vertex(pointB), mesh.add_vertex(pointC));
-    if (faceHandle == GlmMesh::FaceHandle()) {
+    if (faceHandle == GlmTriMesh::FaceHandle()) {
         mesh.clean();
         throw std::runtime_error("Failed to create new face");
     }
@@ -121,11 +121,11 @@ OpenMesh::SmartFaceHandle Implicit::CurvatureTessellator::addNewFace(const glm::
 OpenMesh::SmartFaceHandle Implicit::CurvatureTessellator::addNewFace(const OpenMesh::VertexHandle& pointA, const OpenMesh::VertexHandle& pointB, const glm::dvec3& pointC, double newTriangleLongestSide)
 {
     auto newVertex = mesh.add_vertex(pointC);
-    if (newVertex == GlmMesh::VertexHandle())
+    if (newVertex == GlmTriMesh::VertexHandle())
         throw std::runtime_error("Failed to create new vertex");
 
     auto faceHandle = mesh.add_face(pointA, pointB, newVertex);
-    if (faceHandle == GlmMesh::FaceHandle()) {
+    if (faceHandle == GlmTriMesh::FaceHandle()) {
         mesh.delete_vertex(newVertex);
         throw std::runtime_error("Failed to create new face");
     }
@@ -253,7 +253,7 @@ bool Implicit::CurvatureTessellator::applyEarCutting(const OpenMesh::SmartFaceHa
         mesh.data(heh_next.edge()).grownAlready = true;
         mesh.data(heh_next_next.edge()).grownAlready = true;
         auto newFace = mesh.add_face(heh.to(), heh_next.to(), heh_next_next.to());
-        if (newFace == GlmMesh::FaceHandle()) {
+        if (newFace == GlmTriMesh::FaceHandle()) {
             throw std::runtime_error("Failed to create new face");
         }
         mesh.data(newFace).faceCreationMethod = FaceCreationMethod::EarCutting;
@@ -265,7 +265,7 @@ bool Implicit::CurvatureTessellator::applyEarCutting(const OpenMesh::SmartFaceHa
         mesh.data(heh_prev.edge()).grownAlready = true;
         mesh.data(heh.edge()).grownAlready = true;
         auto newFace = mesh.add_face(heh_prev.from(), heh.from(), heh.to());
-        if (newFace == GlmMesh::FaceHandle()) {
+        if (newFace == GlmTriMesh::FaceHandle()) {
             throw std::runtime_error("Failed to create new face");
         }
         mesh.data(newFace).faceCreationMethod = FaceCreationMethod::EarCutting;
@@ -304,7 +304,7 @@ void Implicit::CurvatureTessellator::computeClosestNeighbours()
 {
     OpenMesh::SmartHalfedgeHandle heh_start = FindBoundaryHalfEdge( mesh );
 
-    GlmMesh gap;
+    GlmPolyMesh gap;
     auto heh = heh_start;
     do
     {
@@ -315,8 +315,8 @@ void Implicit::CurvatureTessellator::computeClosestNeighbours()
         heh = heh.next();
     } while (heh != heh_start);
 
-    GlmVec3MeshKdTreeAdaptor gapKdTreeAdaptor{ gap };
-    GlmMeshKdTree gapKdTree{ 3, gapKdTreeAdaptor };
+    GlmPolyMeshKdTreeAdaptor gapKdTreeAdaptor{ gap };
+    GlmPolyMeshKdTree gapKdTree{ 3, gapKdTreeAdaptor };
 
     gapKdTree.buildIndex();
 

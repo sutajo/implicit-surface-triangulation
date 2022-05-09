@@ -83,7 +83,7 @@ void Mesh::Update(const std::vector<Vertex>& vertices)
 	Update(vertices, FindCenter(vertices));
 }
 
-std::vector<Vertex> Mesh::GetMeshVertices(const GlmMesh& mesh, FaceVisualization visualization) const
+std::vector<Vertex> Mesh::GetMeshVertices(const GlmTriMesh& mesh, FaceVisualization visualization) const
 {
 	std::vector<Vertex> vertices(mesh.n_faces() * 3);
 	size_t index = 0;
@@ -107,7 +107,7 @@ std::vector<Vertex> Mesh::GetMeshVertices(const GlmMesh& mesh, FaceVisualization
 	return vertices;
 }
 
-std::vector<Vertex> Mesh::GetLineVertices(const GlmMesh& mesh) const
+std::vector<Vertex> Mesh::GetLineVertices(const GlmTriMesh& mesh) const
 {
 	std::vector<Vertex> vertices;
 	vertices.reserve(mesh.n_edges());

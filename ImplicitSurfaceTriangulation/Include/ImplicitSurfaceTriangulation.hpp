@@ -74,7 +74,7 @@ namespace Implicit
 		/**
 		 Get the current mesh
 		 */
-		const GlmMesh& GetMesh();
+		const GlmTriMesh& GetMesh();
 
 		/**
 		 Compute the bounding box using a kdTree
@@ -120,17 +120,17 @@ namespace Implicit
 		/**
 		 Generated mesh
 		 */
-		GlmMesh mesh;
+		GlmTriMesh mesh;
 
 		/**
 		 glm kdTree adaptor
 		 */
-		GlmVec3MeshKdTreeAdaptor kdTreeAdaptor { mesh };
+		GlmTriMeshKdTreeAdaptor kdTreeAdaptor { mesh };
 
 		/**
 		 kdTree for searching nearby triangles
 		 */
-		GlmMeshKdTree kdTree{ 3, kdTreeAdaptor };
+		GlmTriMeshKdTree kdTree{ 3, kdTreeAdaptor };
 
 		/**
 		 kdTree needs a rebuild before next search

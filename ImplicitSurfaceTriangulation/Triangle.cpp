@@ -5,7 +5,7 @@
 #include <fmt/format.h>
 #include <array>
 
-Triangle::Triangle(const OpenMesh::SmartFaceHandle face, const GlmMesh& mesh)
+Triangle::Triangle(const OpenMesh::SmartFaceHandle face, const GlmTriMesh& mesh)
 {
     auto vertices = face.vertices().to_array<3>();
     a = mesh.point(vertices[0]), b = mesh.point(vertices[1]), c = mesh.point(vertices[2]);

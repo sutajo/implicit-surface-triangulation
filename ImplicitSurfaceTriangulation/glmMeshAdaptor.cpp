@@ -21,7 +21,7 @@ namespace glm {
 	}
 }
 
-OpenMesh::SmartHalfedgeHandle FindBoundaryHalfEdge(const GlmMesh& mesh)
+OpenMesh::SmartHalfedgeHandle FindBoundaryHalfEdge(const GlmTriMesh& mesh)
 {
 	OpenMesh::SmartHalfedgeHandle heh;
 	for (auto& edge : mesh.edges())

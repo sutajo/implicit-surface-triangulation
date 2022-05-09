@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
+#include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
 #include <OpenMesh/Core/Utils/vector_traits.hh>
 
 // OpenMesh vertex traits for glm::vec3
@@ -61,6 +62,7 @@ struct GlmAdaptor : public OpenMesh::DefaultTraits
 };
 
 // Concrete mesh type
-using GlmMesh = OpenMesh::TriMesh_ArrayKernelT<GlmAdaptor>;
+using GlmTriMesh = OpenMesh::TriMesh_ArrayKernelT<GlmAdaptor>;
+using GlmPolyMesh = OpenMesh::PolyMesh_ArrayKernelT<GlmAdaptor>;
 
-OpenMesh::SmartHalfedgeHandle FindBoundaryHalfEdge(const GlmMesh& mesh);
+OpenMesh::SmartHalfedgeHandle FindBoundaryHalfEdge(const GlmTriMesh& mesh);

@@ -4,14 +4,14 @@
 
 #include "glmMeshAdaptor.hpp"
 
-template <typename num_t, typename point_t>
+template <typename mesh_t, typename num_t, typename point_t>
 class GlmMeshKdTreeAdaptor
 {
 private:
-    const GlmMesh& mesh;
+    const mesh_t& mesh;
    
 public:
-    explicit GlmMeshKdTreeAdaptor(const GlmMesh& mesh) : mesh(mesh) {}
+    explicit GlmMeshKdTreeAdaptor(const mesh_t& mesh) : mesh(mesh) {}
 
     inline size_t kdtree_get_point_count() const { return mesh.n_vertices(); }
 
@@ -25,6 +25,10 @@ public:
     bool kdtree_get_bbox(BBOX& /* bb */) const { return false; }
 };
 
-using GlmVec3MeshKdTreeAdaptor = GlmMeshKdTreeAdaptor<double, glm::dvec3>;
-using GlmMeshKdTree = nanoflann::KDTreeSingleIndexAdaptor
-    <nanoflann::L2_Simple_Adaptor<double, GlmVec3MeshKdTreeAdaptor>, GlmVec3MeshKdTreeAdaptor, 3, unsigned int>;
+using GlmTriMeshKdTreeAdaptor = GlmMeshKdTreeAdaptor<GlmTriMesh, double, glm::dvec3>;
+using GlmTriMeshKdTree = nanoflann::KDTreeSingleIndexAdaptor
+    <nanoflann::L2_Simple_Adaptor<double, GlmTriMeshKdTreeAdaptor>, GlmTriMeshKdTreeAdaptor, 3, unsigned int>;
+
+using GlmPolyMeshKdTreeAdaptor = GlmMeshKdTreeAdaptor<GlmPolyMesh, double, glm::dvec3>;
+using GlmPolyMeshKdTree = nanoflann::KDTreeSingleIndexAdaptor
+    <nanoflann::L2_Simple_Adaptor<double, GlmPolyMeshKdTreeAdaptor>, GlmPolyMeshKdTreeAdaptor, 3, unsigned int>;
