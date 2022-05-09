@@ -354,9 +354,9 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 
 	distStr = std::format("{}", vertices[0].idx());
 	size = ImGui::GetFont()->CalcTextSizeA(fontSize, FLT_MAX, FLT_MAX, distStr.c_str());
-	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2(gridTriangleA.x - size.x * 2.0f, gridTriangleA.y - 15.0f), IM_COL32(59, 222, 255, 255), distStr.c_str());
-	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2(gridTriangleB.x + 10.0f , gridTriangleB.y - 10.0f), IM_COL32(59, 222, 255, 255), std::format("{}", vertices[1].idx()).c_str());
-	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2(gridTriangleC.x - 5.0f  , gridTriangleC.y + 10.0f), IM_COL32(59, 222, 255, 255), std::format("{}", vertices[2].idx()).c_str());
+	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2(gridTriangleA.x - size.x - 10.f, gridTriangleA.y - size.y / 2.f), IM_COL32(59, 222, 255, 255), distStr.c_str());
+	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2(gridTriangleB.x + 10.0f , gridTriangleB.y - size.y / 2.f), IM_COL32(59, 222, 255, 255), std::format("{}", vertices[1].idx()).c_str());
+	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2(gridTriangleC.x - size.x / 2.f , gridTriangleC.y + 10.0f), IM_COL32(59, 222, 255, 255), std::format("{}", vertices[2].idx()).c_str());
 
 	// Lines
 	for (int n = 0; n < points.Size; n += 2)
