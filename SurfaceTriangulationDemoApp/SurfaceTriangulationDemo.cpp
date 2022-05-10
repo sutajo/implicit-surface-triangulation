@@ -503,7 +503,8 @@ void SurfaceTriangulationDemo::DrawUI()
 
 					if (Button("Run iteration") && tessellator)
 					{
-						tessellator->RunIterations(1);
+						tessellator->ClosestNeighboursComputed() ? tessellator->RunFillingIterations(1) : tessellator->RunGrowingIterations(1);
+						UpdateMesh();
 					}
 					SameLine();
 					if (Button("Run N iterations"))
@@ -599,7 +600,7 @@ void SurfaceTriangulationDemo::RunPendingIterations()
 	if (pendingIterations > 0)
 	{
 		const int iterations = std::min(ITERATIONS_PER_FRAME, pendingIterations);
-		const bool changed = !tessellator->RunIterations(iterations);
+		const bool changed = tessellator->ClosestNeighboursComputed() ? !tessellator->RunFillingIterations(iterations) : !tessellator->RunGrowingIterations(iterations);
 		pendingIterations -= iterations;
 		if (changed &&
 			algorithmSettings.realTimeUpdate)
@@ -644,9 +645,12 @@ void SurfaceTriangulationDemo::onDisplay()
 	instance->RunPendingIterations();
 
 	// Drawing
+	if (instance->tessellator->ClosestNeighboursComputed())
+	{
+		instance->DrawMesh(instance->closestNeighbours, true, false);
+	}
 	instance->DrawMesh(instance->mesh, false);
 	instance->DrawUI();
-
 	if (instance->algorithmSettings.showBoundingBox)
 	{
 		glEnable(GL_CULL_FACE);
@@ -654,10 +658,7 @@ void SurfaceTriangulationDemo::onDisplay()
 		instance->DrawMesh(instance->bb, false, false);
 		glDisable(GL_CULL_FACE);
 	}
-	if (instance->tessellator->ClosestNeighboursComputed())
-	{
-		instance->DrawMesh(instance->closestNeighbours, true, false);
-	}
+
 
 	// ImGUI frame end
 	ImGui::Render();

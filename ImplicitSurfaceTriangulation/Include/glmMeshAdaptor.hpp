@@ -65,4 +65,21 @@ struct GlmAdaptor : public OpenMesh::DefaultTraits
 using GlmTriMesh = OpenMesh::TriMesh_ArrayKernelT<GlmAdaptor>;
 using GlmPolyMesh = OpenMesh::PolyMesh_ArrayKernelT<GlmAdaptor>;
 
-OpenMesh::SmartHalfedgeHandle FindBoundaryHalfEdge(const GlmTriMesh& mesh);
+template<typename mesh_t>
+OpenMesh::SmartHalfedgeHandle FindBoundaryHalfEdge(const mesh_t& mesh)
+{
+	OpenMesh::SmartHalfedgeHandle heh;
+	for (auto& edge : mesh.edges())
+	{
+		if (edge.is_boundary())
+		{
+			if (edge.h0().is_boundary())
+				heh = edge.h0();
+			else
+				heh = edge.h1();
+
+			break;
+		}
+	}
+	return heh;
+}

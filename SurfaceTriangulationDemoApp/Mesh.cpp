@@ -52,6 +52,8 @@ glm::vec3 Mesh::MapFaceCreationMethodColor(FaceCreationMethod method) const
 		return glm::vec3(0.0f, 1.0f, 0.0f);
 	else if (method == FaceCreationMethod::EarCutting)
 		return glm::vec3(1.0f, 1.0f, 0.0f);
+	else if (method == FaceCreationMethod::XFilling)
+		return glm::vec3(1.0f, 140.0f / 255.0f, 0.0f);
 }
 
 glm::vec3 Mesh::FindCenter(const std::vector<Vertex>& vertices)
@@ -83,55 +85,82 @@ void Mesh::Update(const std::vector<Vertex>& vertices)
 	Update(vertices, FindCenter(vertices));
 }
 
-std::vector<Vertex> Mesh::GetMeshVertices(const GlmTriMesh& mesh, FaceVisualization visualization) const
+std::vector<Vertex> Mesh::GetMeshVertices(const GlmPolyMesh& mesh, FaceVisualization visualization) const
 {
 	std::vector<Vertex> vertices(mesh.n_faces() * 3);
 	size_t index = 0;
 	for (auto f : mesh.faces())
-		for (auto v : mesh.fv_range(f))
-		{
-			vertices[index].Position = mesh.point(v);
-			vertices[index].Normal = mesh.normal(v);
-			vertices[index].Color = 
-				visualization == FaceVisualization::Id ? 
-					GetColorFromFaceIndex(f.idx()) 
-				: ( 
-					visualization == FaceVisualization::Normal ?
-						glm::vec3((mesh.normal(v) / 2. + 1.))
-					:
-					 	MapFaceCreationMethodColor( mesh.data(f).faceCreationMethod )
-				  );
-			++index;
-		}
+		if(f.valence() == 3)
+			for (auto v : mesh.fv_range(f))
+			{
+				vertices[index].Position = mesh.point(v);
+				vertices[index].Normal = mesh.normal(v);
+				vertices[index].Color = 
+					visualization == FaceVisualization::Id ? 
+						GetColorFromFaceIndex(f.idx()) 
+					: ( 
+						visualization == FaceVisualization::Normal ?
+							glm::vec3((mesh.normal(v) / 2. + 1.))
+						:
+					 		MapFaceCreationMethodColor( mesh.data(f).faceCreationMethod )
+					  );
+				++index;
+			}
 
 	return vertices;
 }
 
-std::vector<Vertex> Mesh::GetLineVertices(const GlmTriMesh& mesh) const
+std::vector<Vertex> Mesh::GetLineVertices(const GlmPolyMesh& mesh) const
 {
 	std::vector<Vertex> vertices;
 	vertices.reserve(mesh.n_edges());
 
-	auto heh_start = FindBoundaryHalfEdge(mesh);
-	auto heh = heh_start;
+	for (auto f : mesh.faces())
+		if (f.valence() > 3)
+		{
+			auto heh_start = f.halfedge();
+			auto heh = heh_start;
 
-	do
-	{
-		const auto closestNeighbour = mesh.data(heh.to()).closestNeighbour;
-		const bool is_bridge = mesh.data(closestNeighbour).closestNeighbour == heh.to();
+			do
+			{
+				// Edge
+				{
+					auto edgeColorRGB = std::hash<int>{}(f.idx());
+					auto R = (edgeColorRGB & 0xFF0000) >> 16;
+					auto G = (edgeColorRGB & 0x00FF00) >> 8;
+					auto B = (edgeColorRGB & 0x0000FF);
+					auto edgeColor = glm::vec3(R / 255.f, G / 255.f, B / 255.f);
 
-		Vertex v1;
-		v1.Position = mesh.point( heh.to() );
-		v1.Color = is_bridge ? glm::vec3(1.0f, 223.0f / 255.0f, 0.0f) : glm::vec3(1.0f, 140.0f / 255.0f, 0.0f);
-		vertices.push_back(v1);
+					Vertex v1;
+					v1.Position = mesh.point(heh.from());
+					v1.Color = edgeColor;
+					vertices.push_back(v1);
 
-		Vertex v2;
-		v2.Position = mesh.point(closestNeighbour);
-		v2.Color = is_bridge ? glm::vec3(1.0f, 223.0f / 255.0f, 0.0f) : glm::vec3(1.0f, 1.0f, 0.0f);
-		vertices.push_back(v2);
+					Vertex v2;
+					v2.Position = mesh.point(heh.to());
+					v2.Color = edgeColor;
+					vertices.push_back(v2);
+				}
 
-		heh = heh.next();
-	} while (heh != heh_start);
+				// Closest neighbour relationship
+				{
+					const auto closestNeighbour = mesh.data(heh.to()).closestNeighbour;
+					const bool is_bridge = mesh.data(closestNeighbour).closestNeighbour == heh.to();
+
+					Vertex v1;
+					v1.Position = mesh.point(heh.to());
+					v1.Color = is_bridge ? glm::vec3(1.0f, 223.0f / 255.0f, 0.0f) : glm::vec3(1.0f, 140.0f / 255.0f, 0.0f);
+					vertices.push_back(v1);
+
+					Vertex v2;
+					v2.Position = mesh.point(closestNeighbour);
+					v2.Color = is_bridge ? glm::vec3(1.0f, 223.0f / 255.0f, 0.0f) : glm::vec3(1.0f, 1.0f, 0.0f);
+					vertices.push_back(v2);
+				}
+
+				heh = heh.next();
+			} while (heh != heh_start);
+		}
 
 	return vertices;
 }

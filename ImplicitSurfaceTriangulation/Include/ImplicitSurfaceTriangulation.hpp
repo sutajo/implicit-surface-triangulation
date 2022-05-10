@@ -6,6 +6,8 @@
 #include <glm/glm.hpp>
 #include <optional>
 #include <functional>
+#include <deque>
+#include <set>
 
 #include "glmMeshAdaptor.hpp"
 #include "glmMeshKdTree.hpp"
@@ -57,9 +59,14 @@ namespace Implicit
 		void SetRho(double rho);
 
 		/**
-		 Runs one iteration of the algorithm. Returns true if the mesh is finished.
+		 Runs n iterations of the growing phase. Returns true if the phase is completed.
 		 */
-		bool RunIterations(int iterations);
+		bool RunGrowingIterations(int iterations);
+
+		/**
+		 Runs n iterations of the filling phase. Returns true if the phase is completed.
+		 */
+		bool RunFillingIterations(int iterations);
 
 		/**
 		 Runs the mesh generation algorithm until completion
@@ -74,7 +81,7 @@ namespace Implicit
 		/**
 		 Get the current mesh
 		 */
-		const GlmTriMesh& GetMesh();
+		const GlmPolyMesh& GetMesh();
 
 		/**
 		 Compute the bounding box using a kdTree
@@ -120,17 +127,17 @@ namespace Implicit
 		/**
 		 Generated mesh
 		 */
-		GlmTriMesh mesh;
+		GlmPolyMesh mesh;
 
 		/**
 		 glm kdTree adaptor
 		 */
-		GlmTriMeshKdTreeAdaptor kdTreeAdaptor { mesh };
+		GlmPolyMeshKdTreeAdaptor kdTreeAdaptor { mesh };
 
 		/**
 		 kdTree for searching nearby triangles
 		 */
-		GlmTriMeshKdTree kdTree{ 3, kdTreeAdaptor };
+		GlmPolyMeshKdTree kdTree{ 3, kdTreeAdaptor };
 
 		/**
 		 kdTree needs a rebuild before next search
@@ -188,6 +195,21 @@ namespace Implicit
 		bool applyEarCutting(const OpenMesh::SmartFaceHandle& newFace);
 
 		/*
+		* Add a mesh vertex to the gap
+		*/
+		OpenMesh::VertexHandle addGapVertex(OpenMesh::VertexHandle vertex, bool rebuildKdTree = false);
+
+		/*
+		* Remove a mesh vertex from the gap
+		*/
+		void removeGapVertex(OpenMesh::VertexHandle vertex);
+
+		/*
+		* Compute the closest neighbour of the to vertex of the halfedge
+		*/
+		OpenMesh::VertexHandle computeClosestNeighbour(OpenMesh::SmartHalfedgeHandle heh);
+
+		/*
 		* Compute closest neighbour relationships for the filling phase
 		*/
 		void computeClosestNeighbours();
@@ -198,6 +220,11 @@ namespace Implicit
 		bool closestNeighboursComputed = false;
 
 		/*
+		* Is the to vertex of the halfedge convex?
+		*/
+		bool isConvex(OpenMesh::SmartHalfedgeHandle toHalfedge);
+
+		/*
 		* Is the vertex a neigbour of the "to" vertex of the halfedge?
 		*/
 		bool isNeighbour(OpenMesh::SmartHalfedgeHandle toHalfedge, OpenMesh::VertexHandle vertex);
@@ -206,5 +233,52 @@ namespace Implicit
 		* Is the vertex part of a bridge?
 		*/
 		bool isBridge(OpenMesh::VertexHandle vertex);
+
+		/*
+		* Gap list for filling phase
+		*/
+		std::deque<OpenMesh::FaceHandle> gaps;
+
+		/*
+		* Filling phase heuristic 1: Small Polygon Filling
+		*/
+		bool SmallPolygonFilling(OpenMesh::FaceHandle gap);
+
+		/*
+		* Filling phase heuristic 2: Subdivision on Bridges
+		*/
+		bool SubdivisionOnBridges(OpenMesh::FaceHandle gap);
+
+		/*
+		* Filling phase heuristic 3: X Filling
+		*/
+		bool XFilling(OpenMesh::FaceHandle gap);
+
+		/*
+		* Filling phase heuristic 4: Ear Filling
+		*/
+		bool EarFilling(OpenMesh::FaceHandle gap);
+
+		/*
+		* Filling phase heuristic 5: Convex Polygon Filling
+		*/
+		bool ConvexPolygonFilling(OpenMesh::FaceHandle gap);
+
+		/*
+		* Filling phase heuristic 6: Relaxed Ear Filling
+		*/
+		bool RelaxedEarFilling(OpenMesh::FaceHandle gap);
+
+		/*
+		* Filling phase heuristic 7: Concave Vertex Bisection
+		*/
+		bool ConcaveVertexBisection(OpenMesh::FaceHandle gap);
+
+		/*
+		* KdTree with the gap points
+		*/
+		GlmPolyMesh gap;
+		GlmPolyMeshKdTreeAdaptor gapKdTreeAdaptor{ gap };
+		GlmPolyMeshKdTree gapKdTree{ 3, gapKdTreeAdaptor };
 	};
 };

@@ -163,6 +163,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FillingPhase.hpp" />
     <ClInclude Include="ImplicitSystem\inc\Aabb.hpp" />
     <ClInclude Include="ImplicitSystem\inc\fieldFunctions.hpp" />
     <ClInclude Include="ImplicitSystem\inc\floatlibs.hpp" />

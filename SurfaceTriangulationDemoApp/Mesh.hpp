@@ -47,8 +47,8 @@ public:
 	void RenderAsLines();
 	void Update(const std::vector<Vertex>& vertices, glm::vec3 center);
 	void Update(const std::vector<Vertex>& vertices);
-	std::vector<Vertex> GetMeshVertices(const GlmTriMesh& mesh, FaceVisualization visualization = FaceVisualization::Id) const;
-	std::vector<Vertex> GetLineVertices(const GlmTriMesh& mesh) const;
+	std::vector<Vertex> GetMeshVertices(const GlmPolyMesh& mesh, FaceVisualization visualization = FaceVisualization::Id) const;
+	std::vector<Vertex> GetLineVertices(const GlmPolyMesh& mesh) const;
 	const glm::mat4& GetWorldMat();
 	void RotateInCameraSpace(int relx, int rely, const Camera& camera);
 	void ResetRotation() { orientation = glm::vec3(0.0, 0.0, 0.0); UpdateWorldMat(); }

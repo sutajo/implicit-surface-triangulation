@@ -15,7 +15,16 @@ struct Triangle
 
 	Triangle(){}
 	Triangle(const glm::dvec3& a, const glm::dvec3& b, const glm::dvec3& c) : a(a), b(b), c(c) {}
-	Triangle(const OpenMesh::SmartFaceHandle face, const GlmTriMesh& mesh);
+
+	template<typename mesh_t>
+	Triangle(const OpenMesh::SmartFaceHandle face, const mesh_t& mesh)
+	{
+		if (face.valence() != 3)
+			throw std::runtime_error("Face is not a triangle");
+
+		auto vertices = face.vertices().to_array<3>();
+		a = mesh.point(vertices[0]), b = mesh.point(vertices[1]), c = mesh.point(vertices[2]);
+	}
 
 	std::tuple<double, double, double> GetSideLengths() const;
 	double GetLongestSide() const;

@@ -1,11 +1,14 @@
 ﻿#include "ImplicitSurfaceTriangulation.hpp"
 #include <glm/gtx/vector_angle.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 Implicit::CurvatureTessellator::CurvatureTessellator(Object& object) 
     : object(object), visitor()
 {
     mesh.request_face_normals();
     mesh.request_vertex_normals();
+    gap.request_vertex_status();
+    omerr().rdbuf(std::cerr.rdbuf());
 }
 
 Implicit::CurvatureTessellator::CurvatureTessellator(Object& object, Visitor& visitor) 
@@ -13,6 +16,8 @@ Implicit::CurvatureTessellator::CurvatureTessellator(Object& object, Visitor& vi
 {
     mesh.request_face_normals();
     mesh.request_vertex_normals();
+    gap.request_vertex_status();
+    omerr().rdbuf(std::cerr.rdbuf());
 }
 
 void Implicit::CurvatureTessellator::SetRho(double rho)
@@ -50,14 +55,14 @@ void Implicit::CurvatureTessellator::ComputeMesh()
     
 }
 
-const GlmTriMesh& Implicit::CurvatureTessellator::GetMesh()
+const GlmPolyMesh& Implicit::CurvatureTessellator::GetMesh()
 {
     return mesh;
 }
 
 const Aabb Implicit::CurvatureTessellator::ComputeBoundingBox()
 {
-    GlmTriMeshKdTree::BoundingBox bb;
+    GlmPolyMeshKdTree::BoundingBox bb;
     kdTree.computeBoundingBox(bb);
     Aabb aabb;
     auto min = glm::dvec3(bb[0].low, bb[1].low, bb[2].low);
@@ -204,7 +209,7 @@ bool Implicit::CurvatureTessellator::expandEdge(OpenMesh::SmartEdgeHandle edge, 
         const double r = sqrt(t * t + v * v);
 
         std::vector<std::pair<unsigned int, double>> matches;
-        kdTree.radiusSearch(&newTriangle.GetCentroid()[0], r, matches, nanoflann::SearchParams());
+        kdTree.radiusSearch(glm::value_ptr(newTriangle.GetCentroid()), r, matches, nanoflann::SearchParams());
 
         for (auto &match : matches)
         {
@@ -275,10 +280,68 @@ bool Implicit::CurvatureTessellator::applyEarCutting(const OpenMesh::SmartFaceHa
     return earCut;
 }
 
-bool Implicit::CurvatureTessellator::isNeighbour(OpenMesh::SmartHalfedgeHandle toHalfedge, OpenMesh::VertexHandle vertex)
+OpenMesh::VertexHandle Implicit::CurvatureTessellator::addGapVertex(OpenMesh::VertexHandle vertex, bool rebuildKdTree)
+{
+    auto gapVertex = gap.add_vertex(mesh.point(vertex));
+    gap.data(gapVertex).connectedVertex = vertex;
+    mesh.data(vertex).connectedVertex = gapVertex;
+    if (rebuildKdTree)
+        gapKdTree.buildIndex();
+
+    return gapVertex;
+}
+
+void Implicit::CurvatureTessellator::removeGapVertex(OpenMesh::VertexHandle vertex)
+{
+    auto gapVertex = mesh.data(vertex).connectedVertex;
+    gap.delete_vertex(gapVertex);
+}
+
+OpenMesh::VertexHandle Implicit::CurvatureTessellator::computeClosestNeighbour(OpenMesh::SmartHalfedgeHandle heh)
+{
+    double r = mesh.calc_edge_length(heh);
+    std::vector<std::pair<unsigned int, double>> matches;
+    nanoflann::SearchParams searchParams;
+    searchParams.sorted = true;
+    OpenMesh::VertexHandle closestNeighbour;
+    do
+    {
+        r *= 2.;
+        matches.clear();
+        gapKdTree.radiusSearch(glm::value_ptr(mesh.point(heh.to())), r, matches, searchParams);
+
+        for (auto& match : matches)
+        {
+            OpenMesh::VertexHandle gapVertex(match.first);
+            if (!gap.status(gapVertex).deleted())
+            {
+                auto meshVertex = gap.data(gapVertex).connectedVertex;
+                if (isNeighbour(heh, meshVertex))
+                {
+                    closestNeighbour = meshVertex;
+                    break;
+                }
+            }
+        }
+
+        if (matches.size() == gap.n_vertices())
+        {
+            break;
+        }
+    } while (!closestNeighbour.is_valid());
+    return closestNeighbour;
+}
+
+bool Implicit::CurvatureTessellator::isConvex(OpenMesh::SmartHalfedgeHandle toHalfedge)
 {
     const double sectorAngle = mesh.calc_sector_angle(toHalfedge);
     const bool isConvex = 0.0 <= sectorAngle && sectorAngle <= glm::radians(180.0);
+    return isConvex;
+}
+
+bool Implicit::CurvatureTessellator::isNeighbour(OpenMesh::SmartHalfedgeHandle toHalfedge, OpenMesh::VertexHandle vertex)
+{
+    const bool isConvex = this->isConvex(toHalfedge);
     const auto planePoint = mesh.point(toHalfedge.to());
     const auto pointNormal = object.Normal(planePoint);
     const Plane pv1{ planePoint, pointNormal, mesh.calc_edge_vector(toHalfedge) };
@@ -300,83 +363,231 @@ bool Implicit::CurvatureTessellator::isBridge(OpenMesh::VertexHandle vertex)
     return mesh.data(closestNeigbour).closestNeighbour == vertex;
 }
 
-void Implicit::CurvatureTessellator::computeClosestNeighbours()
+bool Implicit::CurvatureTessellator::SmallPolygonFilling(OpenMesh::FaceHandle gap)
 {
-    OpenMesh::SmartHalfedgeHandle heh_start = FindBoundaryHalfEdge( mesh );
+    if(mesh.valence(gap) != 4)
+        return false;
 
-    GlmPolyMesh gap;
+    bool allVerticesConvex = true;
+    for (auto heh : mesh.fh_range(gap))
+    {
+        if (!isConvex(heh))
+        {
+            allVerticesConvex = false;
+            break;
+        }
+    }
+
+    if (allVerticesConvex)
+    {
+        auto heh = OpenMesh::make_smart(mesh.halfedge_handle(gap), &mesh);
+        auto p1 = mesh.point(heh.from());
+        auto p2 = mesh.point(heh.to());
+        auto heh_nn = heh.next().next();
+        auto p3 = mesh.point(heh_nn.from());
+        auto p4 = mesh.point(heh_nn.to());
+
+        auto side1 = glm::distance(p1, p2);
+        auto side2 = glm::distance(p2, p3);
+        auto side3 = glm::distance(p3, p4);
+        auto side4 = glm::distance(p4, p1);
+
+        const double shortestSide = std::min({ side1, side2, side3, side4 });
+        const double longestSide = std::max({ side1, side2, side3, side4 });
+
+        const double diagonal1 = glm::distance(p1, p3);
+        const double diagonal2 = glm::distance(p2, p4);
+
+        const double quality1 = std::min({ shortestSide, diagonal1 }) / std::max({ longestSide, diagonal1 });
+        const double quality2 = std::min({ shortestSide, diagonal2 }) / std::max({ longestSide, diagonal2 });
+
+        OpenMesh::HalfedgeHandle new_heh;
+        if (quality1 > quality2)
+        {
+            new_heh = mesh.insert_edge(heh.prev(), heh_nn);
+        }
+        else
+        {
+            new_heh = mesh.insert_edge(heh, heh_nn.next());
+        }
+
+        auto new_face = mesh.face_handle(new_heh);
+        auto new_face_opp = mesh.opposite_face_handle(new_heh);
+        auto creationMethod = mesh.data(gap).faceCreationMethod == FaceCreationMethod::XFilling ? FaceCreationMethod::XFilling : FaceCreationMethod::SmallPolygonFilling;
+        mesh.data(new_face).faceCreationMethod = creationMethod;
+        mesh.data(new_face_opp).faceCreationMethod = creationMethod;
+    }
+    else
+    {
+        mesh.triangulate(gap);
+    }
+
+    return true;
+}
+
+bool Implicit::CurvatureTessellator::SubdivisionOnBridges(OpenMesh::FaceHandle gap)
+{
+    bool meshChanged = false;
+    /*
+    auto heh_start = OpenMesh::make_smart(mesh.halfedge_handle(gap), &mesh);
     auto heh = heh_start;
     do
     {
-        auto heh_to = heh.to();
-        auto v = gap.add_vertex(mesh.point(heh_to));
-        mesh.data(v).connectedVertex = heh_to;
+        auto v = heh.to();
+        auto closestNeighbour = OpenMesh::make_smart(mesh.data(v).closestNeighbour, &mesh);
+        if (isBridge(v) && v.idx() < closestNeighbour.idx())
+        {
+            auto closestNeighbour_heh = closestNeighbour.outgoing_halfedges().first([&](OpenMesh::HalfedgeHandle h) { return mesh.face_handle(h) == gap; });
+            if (!closestNeighbour_heh.is_valid())
+                throw std::runtime_error("Halfege handle not found");
+
+            auto newface_halfege = OpenMesh::make_smart(mesh.insert_edge(heh, closestNeighbour_heh), &mesh);
+            auto new_face = mesh.face_handle(newface_halfege);
+            auto new_face_opp = mesh.opposite_face_handle(newface_halfege);
+            gaps.push_back(new_face);
+            meshChanged = true;
+            break;
+        }
+
+        heh = heh.next();
+    } while (heh != heh_start);
+    */
+    return meshChanged;
+}
+
+bool Implicit::CurvatureTessellator::XFilling(OpenMesh::FaceHandle gap)
+{
+    auto sgap = OpenMesh::make_smart(gap, &mesh);
+    if (sgap.valence() < 4)
+        return false;
+
+    bool meshChanged = false;
+
+    OpenMesh::SmartHalfedgeHandle heh_start = OpenMesh::make_smart(mesh.halfedge_handle(gap), &mesh);
+    auto heh = heh_start;
+    do
+    {
+        auto v1 = heh.from();
+        auto v2 = heh.to();
+        const auto heh_next_next = heh.next().next();
+        auto v3 = heh_next_next.from();
+        auto v4 = heh_next_next.to();
+
+        if (mesh.data(v2).closestNeighbour == v4 && mesh.data(v3).closestNeighbour == v1)
+        {
+            bool closestNeighbourOutsideGap = false;
+            // Check that neither v2 nor v3 is the closest neigbour of any vertex not in the current gap
+            auto heh_nn = heh_next_next;
+            while (heh_nn.next() != heh.prev())
+            {
+                auto closestNeighbour = mesh.data(heh_next_next.to()).closestNeighbour;
+                closestNeighbourOutsideGap = closestNeighbour == v2 || closestNeighbour == v3;
+                if (closestNeighbourOutsideGap)
+                    break;
+
+                heh_nn = heh_nn.next();
+            }
+
+            if (!closestNeighbourOutsideGap)
+            {
+                removeGapVertex(v2);
+                removeGapVertex(v3);
+
+                auto d1 = glm::distance(mesh.point(v1), mesh.point(v2));
+                auto d2 = glm::distance(mesh.point(v2), mesh.point(v3));
+                auto d3 = glm::distance(mesh.point(v3), mesh.point(v4));
+                auto d = glm::distance(mesh.point(v1), mesh.point(v4));
+
+                if (d > 1.5 * std::max({ d1, d2, d3 }))
+                {
+                    auto midpoint_vertex = (mesh.point(v1) + mesh.point(v4)) / 2.;
+                    midpoint_vertex = object.Project(midpoint_vertex);
+                    auto mv_handle = mesh.add_vertex(midpoint_vertex);
+                    if (!mesh.add_face(v1, v2, mv_handle).is_valid() ||
+                        !mesh.add_face(v2, v3, mv_handle).is_valid() ||
+                        !mesh.add_face(v3, v4, mv_handle).is_valid())
+                        throw std::runtime_error("Failed to create new faces");
+                }
+                else
+                {
+                    auto newface_halfege = OpenMesh::make_smart(mesh.insert_edge(heh.prev(), heh_next_next.next()), &mesh);
+                    auto new_face = mesh.face_handle(newface_halfege);
+                    auto new_face_opp = mesh.opposite_face_handle(newface_halfege);
+
+                    if (mesh.data(v1).closestNeighbour == v4)
+                        mesh.data(v1).closestNeighbour = computeClosestNeighbour(heh.prev());
+                    if(mesh.data(v4).closestNeighbour == v1)
+                        mesh.data(v4).closestNeighbour = computeClosestNeighbour(newface_halfege);
+               
+                    mesh.data(new_face_opp).faceCreationMethod = FaceCreationMethod::XFilling;
+                    gaps.push_back(new_face_opp);
+                    gaps.push_back(new_face);
+                    meshChanged = true;
+                    break;
+                }
+            }
+        }
 
         heh = heh.next();
     } while (heh != heh_start);
 
-    GlmPolyMeshKdTreeAdaptor gapKdTreeAdaptor{ gap };
-    GlmPolyMeshKdTree gapKdTree{ 3, gapKdTreeAdaptor };
+    return meshChanged;
+}
+
+bool Implicit::CurvatureTessellator::EarFilling(OpenMesh::FaceHandle gap)
+{
+    return false;
+}
+
+bool Implicit::CurvatureTessellator::ConvexPolygonFilling(OpenMesh::FaceHandle gap)
+{
+    return false;
+}
+
+bool Implicit::CurvatureTessellator::RelaxedEarFilling(OpenMesh::FaceHandle gap)
+{
+    return false;
+}
+
+bool Implicit::CurvatureTessellator::ConcaveVertexBisection(OpenMesh::FaceHandle gap)
+{
+    return false;
+}
+
+void Implicit::CurvatureTessellator::computeClosestNeighbours()
+{
+    OpenMesh::SmartHalfedgeHandle heh_start = FindBoundaryHalfEdge( mesh );
+
+    std::vector<OpenMesh::VertexHandle> gapVertices;
+    
+    auto heh = heh_start;
+    do
+    {
+        auto heh_to = heh.to();
+        addGapVertex(heh_to);
+        gapVertices.push_back(heh_to);
+        heh = heh.next();
+    } while (heh != heh_start);
 
     gapKdTree.buildIndex();
 
     heh = heh_start;
     do
     {
-        double r = mesh.calc_edge_length(heh);
-        std::vector<std::pair<unsigned int, double>> matches;
-        nanoflann::SearchParams searchParams;
-        searchParams.sorted = true;
-        OpenMesh::VertexHandle closestNeighbour;
-#ifdef DEBUG
-        int faceIdx = heh.opp().face().idx();
-        if (faceIdx == 85)
-        {
-            gapKdTree.radiusSearch(&mesh.point(heh.to())[0], r, matches, searchParams);
-            for (auto& match : matches)
-            {
-                OpenMesh::VertexHandle v(match.first);
-                v = mesh.data(v).connectedVertex;
-                std::cout << v.idx() << " - " << match.second << "\n";
-            }
-        }
-#endif // DEBUG
-        do
-        {
-            r *= 2.;
-            matches.clear();
-            gapKdTree.radiusSearch(&mesh.point(heh.to())[0], r, matches, searchParams);
-
-            for (auto& match : matches)
-            {
-                OpenMesh::VertexHandle v(match.first);
-                v = mesh.data(v).connectedVertex;
-                if (isNeighbour(heh, v))
-                {
-                    closestNeighbour = v;
-                    break;
-                }
-            }
-
-            if (matches.size() == gap.n_vertices())
-            {
-                break;
-            }
-        } while (!closestNeighbour.is_valid());
-
-#ifdef DEBUG
-        std::cout << mesh.data(closestNeighbour).connectedVertex.idx() << "\n";
-#endif // DEBUG
-
-        mesh.data(heh.to()).closestNeighbour = closestNeighbour;
-
+        mesh.data(heh.to()).closestNeighbour = computeClosestNeighbour(heh);
         heh = heh.next();
     } while (heh != heh_start);
 
     closestNeighboursComputed = true;
+
+    auto initial_gap = mesh.add_face(gapVertices);
+    if (!initial_gap.is_valid())
+        throw std::runtime_error("Can't create initial gap");
+
+    gaps.push_back(initial_gap);
 }
 
-bool Implicit::CurvatureTessellator::RunIterations(int iterations)
+bool Implicit::CurvatureTessellator::RunGrowingIterations(int iterations)
 {
     bool meshChanged = false;
 
@@ -406,4 +617,23 @@ bool Implicit::CurvatureTessellator::RunIterations(int iterations)
         visitor->get().IterationEnded(meshChanged);
 
     return !meshChanged; 
+}
+
+bool Implicit::CurvatureTessellator::RunFillingIterations(int iterations)
+{
+    if (gaps.empty())
+        return false;
+
+    auto gap = gaps.front();
+    gaps.pop_front();
+
+    const bool meshChanged =
+        SmallPolygonFilling(gap) ||
+        SubdivisionOnBridges(gap) ||
+        XFilling(gap) ||
+        EarFilling(gap) ||
+        RelaxedEarFilling(gap) ||
+        ConcaveVertexBisection(gap);
+
+    return meshChanged;
 }

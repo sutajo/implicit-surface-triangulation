@@ -22,7 +22,7 @@ struct AlgorithmVisualizationSettings
 	float rho = 0.1f;
 	float maxSideLength = 0.0;
 	int selectedObjectIndex = 0;
-	int nIterations = 15;
+	int nIterations = 500;
 	bool realTimeUpdate = true;
 	FaceVisualization faceVisualization = FaceVisualization::Id;
 };

@@ -20,21 +20,3 @@ namespace glm {
 		return x;
 	}
 }
-
-OpenMesh::SmartHalfedgeHandle FindBoundaryHalfEdge(const GlmTriMesh& mesh)
-{
-	OpenMesh::SmartHalfedgeHandle heh;
-	for (auto& edge : mesh.edges())
-	{
-		if (edge.is_boundary())
-		{
-			if (edge.h0().is_boundary())
-				heh = edge.h0();
-			else
-				heh = edge.h1();
-
-			break;
-		}
-	}
-	return heh;
-}

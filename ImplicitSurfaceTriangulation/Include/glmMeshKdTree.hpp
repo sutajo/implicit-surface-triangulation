@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nanoflann.hpp>
+#include <vector>
 
 #include "glmMeshAdaptor.hpp"
 
@@ -32,3 +33,4 @@ using GlmTriMeshKdTree = nanoflann::KDTreeSingleIndexAdaptor
 using GlmPolyMeshKdTreeAdaptor = GlmMeshKdTreeAdaptor<GlmPolyMesh, double, glm::dvec3>;
 using GlmPolyMeshKdTree = nanoflann::KDTreeSingleIndexAdaptor
     <nanoflann::L2_Simple_Adaptor<double, GlmPolyMeshKdTreeAdaptor>, GlmPolyMeshKdTreeAdaptor, 3, unsigned int>;
+
