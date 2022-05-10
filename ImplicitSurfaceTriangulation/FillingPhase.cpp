@@ -6,6 +6,7 @@
 Implicit::Tessellation::FillingPhase::FillingPhase(GlmPolyMesh& mesh, Object& object) : Phase(mesh, mesh), mesh(mesh), object(object)
 {
 	gapPoints.request_vertex_status();
+	mesh.request_face_status();
 }
 
 void Implicit::Tessellation::FillingPhase::Start()
@@ -299,7 +300,7 @@ bool Implicit::Tessellation::FillingPhase::XFilling(OpenMesh::FaceHandle gap)
 					auto new_face_opp = mesh.opposite_face_handle(newface_halfege);
 
 					if (mesh.data(v1).closestNeighbour == v4)
-						mesh.data(v1).closestNeighbour = computeClosestNeighbour(heh.prev());
+						mesh.data(v1).closestNeighbour = computeClosestNeighbour(newface_halfege.prev());
 					if (mesh.data(v4).closestNeighbour == v1)
 						mesh.data(v4).closestNeighbour = computeClosestNeighbour(newface_halfege);
 

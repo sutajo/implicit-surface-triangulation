@@ -116,7 +116,7 @@ std::vector<Vertex> Mesh::GetLineVertices(const GlmPolyMesh& mesh) const
 	vertices.reserve(mesh.n_edges());
 
 	for (auto f : mesh.faces())
-		if (f.valence() > 3)
+		if (f.valence() > 3 && !mesh.status(f).deleted())
 		{
 			auto heh_start = f.halfedge();
 			auto heh = heh_start;
