@@ -121,8 +121,13 @@ std::vector<Vertex> Mesh::GetLineVertices(const GlmPolyMesh& mesh) const
 			auto heh_start = f.halfedge();
 			auto heh = heh_start;
 
+			auto face_normal = mesh.calc_face_normal(f);
+
 			do
 			{
+				auto edge_vector = mesh.calc_edge_vector(heh);
+				auto offset_vector = glm::normalize(glm::cross(face_normal, edge_vector)) * 0.0015;
+
 				// Edge
 				{
 					auto edgeColorRGB = std::hash<int>{}(f.idx());
@@ -132,12 +137,12 @@ std::vector<Vertex> Mesh::GetLineVertices(const GlmPolyMesh& mesh) const
 					auto edgeColor = glm::vec3(R / 255.f, G / 255.f, B / 255.f);
 
 					Vertex v1;
-					v1.Position = mesh.point(heh.from());
+					v1.Position = mesh.point(heh.from()) + offset_vector;
 					v1.Color = edgeColor;
 					vertices.push_back(v1);
 
 					Vertex v2;
-					v2.Position = mesh.point(heh.to());
+					v2.Position = mesh.point(heh.to()) + offset_vector;
 					v2.Color = edgeColor;
 					vertices.push_back(v2);
 				}
@@ -148,12 +153,12 @@ std::vector<Vertex> Mesh::GetLineVertices(const GlmPolyMesh& mesh) const
 					const bool is_bridge = mesh.data(closestNeighbour).closestNeighbour == heh.to();
 
 					Vertex v1;
-					v1.Position = mesh.point(heh.to());
+					v1.Position = mesh.point(heh.to()) + offset_vector;
 					v1.Color = is_bridge ? glm::vec3(1.0f, 223.0f / 255.0f, 0.0f) : glm::vec3(1.0f, 140.0f / 255.0f, 0.0f);
 					vertices.push_back(v1);
 
 					Vertex v2;
-					v2.Position = mesh.point(closestNeighbour);
+					v2.Position = mesh.point(closestNeighbour) + offset_vector;
 					v2.Color = is_bridge ? glm::vec3(1.0f, 223.0f / 255.0f, 0.0f) : glm::vec3(1.0f, 1.0f, 0.0f);
 					vertices.push_back(v2);
 				}

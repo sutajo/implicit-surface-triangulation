@@ -153,6 +153,8 @@ bool Implicit::Tessellation::FillingPhase::SmallPolygonFilling(OpenMesh::FaceHan
 	if (mesh.valence(gap) != 4)
 		return false;
 
+	std::cout << "SmallPolygonFilling: " << gap.idx() << std::endl;
+
 	bool allVerticesConvex = true;
 	for (auto heh : mesh.fh_range(gap))
 	{
@@ -265,7 +267,7 @@ bool Implicit::Tessellation::FillingPhase::XFilling(OpenMesh::FaceHandle gap)
 			auto heh_nn = heh_next_next;
 			while (heh_nn.next() != heh.prev())
 			{
-				auto closestNeighbour = mesh.data(heh_next_next.to()).closestNeighbour;
+				auto closestNeighbour = mesh.data(heh_nn.next().to()).closestNeighbour;
 				closestNeighbourOutsideGap = closestNeighbour == v2 || closestNeighbour == v3;
 				if (closestNeighbourOutsideGap)
 					break;
@@ -275,6 +277,9 @@ bool Implicit::Tessellation::FillingPhase::XFilling(OpenMesh::FaceHandle gap)
 
 			if (!closestNeighbourOutsideGap)
 			{
+				std::cout << "XFilling: Face: " << heh.face().idx() << std::endl;
+				std::cout << "XFilling: v1: " << v1.idx() << " v2:" << v2.idx() << " v3:" << v3.idx() << " v4:" << v4.idx() << std::endl;
+
 				removeGapVertex(v2);
 				removeGapVertex(v3);
 
@@ -296,25 +301,36 @@ bool Implicit::Tessellation::FillingPhase::XFilling(OpenMesh::FaceHandle gap)
 				else
 				{
 					auto newface_halfege = OpenMesh::make_smart(mesh.insert_edge(heh.prev(), heh_next_next.next()), &mesh);
-					auto new_face = mesh.face_handle(newface_halfege);
-					auto new_face_opp = mesh.opposite_face_handle(newface_halfege);
+					auto xfilled_face = newface_halfege.opp().face();
 
-					if (mesh.data(v1).closestNeighbour == v4)
-						mesh.data(v1).closestNeighbour = computeClosestNeighbour(newface_halfege.prev());
-					if (mesh.data(v4).closestNeighbour == v1)
-						mesh.data(v4).closestNeighbour = computeClosestNeighbour(newface_halfege);
+					std::cout << "XFilling: Big face: " << newface_halfege.face().idx() << std::endl;
+					std::cout << "XFilling: Small face: " << xfilled_face.idx() << std::endl;
 
-					mesh.data(new_face_opp).faceCreationMethod = FaceCreationMethod::XFilling;
-					gaps.push_back(new_face_opp);
-					gaps.push_back(new_face);
+					auto& v1_cn = mesh.data(v1).closestNeighbour;
+					if (v1_cn == v4 || v1_cn == v3)
+						v1_cn = computeClosestNeighbour(newface_halfege.prev());
+					auto& v4_cn = mesh.data(v4).closestNeighbour;
+					if (v4_cn == v1 || v4_cn == v2)
+						v4_cn = computeClosestNeighbour(newface_halfege);
+
+					mesh.data(xfilled_face).faceCreationMethod = FaceCreationMethod::XFilling;
+					gaps.push_back(xfilled_face);
+
 					meshChanged = true;
-					break;
+
+					heh_start = newface_halfege.prev();
+					heh = heh_start;
 				}
 			}
 		}
 
 		heh = heh.next();
 	} while (heh != heh_start);
+
+	if (meshChanged)
+	{
+		gaps.push_back(heh.face());
+	}
 
 	return meshChanged;
 }
