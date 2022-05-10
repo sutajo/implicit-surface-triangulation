@@ -150,39 +150,6 @@ void SurfaceTriangulationDemo::onReshape(int width, int height)
 	instance->camera.SetProj(glm::radians(60.0f), width / (float)height, 0.01f, 1000.0f);
 }
 
-void SurfaceTriangulationDemo::SeedTriangleGenerated(const Triangle& seed)
-{
-	log.AddLog("Seed triangle generated\n%s\n", seed.to_string().c_str());
-	UpdateMesh();
-}
-
-void SurfaceTriangulationDemo::NewTriangleGenerated()
-{
-	log.AddLog("New triangle generated");
-}
-
-void SurfaceTriangulationDemo::EarCut()
-{
-	log.AddLog("Ear cut");
-}
-
-void SurfaceTriangulationDemo::IterationEnded(bool meshChanged)
-{
-	if (meshChanged)
-	{
-		if (algorithmSettings.realTimeUpdate &&
-			(pendingIterations % ITERATIONS_PER_FRAME) == 0)
-		{
-			UpdateMesh();
-		}
-	}
-	else
-	{
-		pendingIterations = 0;
-		UpdateMesh();
-	}
-}
-
 void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 {
 	const float GRID_STEP = 64.0f;
@@ -201,7 +168,7 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 	ImGui::Text("Clicked face id: %d", clickedFace.idx());
 
 	auto vertices = clickedFace.vertices().to_array<3>();
-	auto glmMesh = tessellator->GetMesh();
+	auto& glmMesh = tessellator->mesh;
 	auto triangle = Triangle{ glmMesh.point(vertices[0]), glmMesh.point(vertices[1]), glmMesh.point(vertices[2]) };
 
 	ImGui::Text("A (Idx %d): (%3f, %3f, %3f)\nB (Idx %d): (%3f, %3f, %3f)\nC (Idx %d): (%3f, %3f, %3f)",
@@ -414,7 +381,7 @@ void SurfaceTriangulationDemo::DrawUI()
 			}
 			Text("Number of triangles: %zu", mesh.GetTriangleCount());
 			Text("Number of vertices: %zu", mesh.GetVertexCount());
-			Text("Longest triangle side: %f", tessellator->GetLongestTriangleSide());
+			Text("Longest triangle side: %f", tessellator->growingPhase.GetLongestTriangleSide());
 			if (Button("Reset orientation"))
 			{
 				closestNeighbours.ResetRotation();
@@ -425,9 +392,6 @@ void SurfaceTriangulationDemo::DrawUI()
 			Checkbox("Show bounding box of the surface", &algorithmSettings.showBoundingBox);
 			if (Combo("Face visualization mode", (int*)&algorithmSettings.faceVisualization, "Id\0Normals\0Face creation method\0"))
 			{
-				if(algorithmSettings.faceVisualization == FaceVisualization::Normal)
-					tessellator->UpdateNormals();
-
 				UpdateMesh();
 			}
 
@@ -449,7 +413,7 @@ void SurfaceTriangulationDemo::DrawUI()
 				PushItemWidth(150);
 				if (SliderFloat("Triangle side length / local radius of curvature (Rho)", &algorithmSettings.rho, 0.0f, 0.4f) && tessellator)
 				{
-					tessellator->SetRho(algorithmSettings.rho);
+					tessellator->growingPhase.SetRho(algorithmSettings.rho);
 				}
 				PopItemWidth();
 
@@ -478,12 +442,6 @@ void SurfaceTriangulationDemo::DrawUI()
 						SetTessellatedObect(GetSelectedObject());
 					}
 					SameLine();
-					if (Button("Generate seed"))
-					{
-						tessellator->GenerateSeedTriangle();
-						tessellator->UpdateNormals();
-					}
-					SameLine();
 					PushItemWidth(150);
 					SliderInt("N", &algorithmSettings.nIterations, 1, 10000);
 					SameLine();
@@ -503,7 +461,7 @@ void SurfaceTriangulationDemo::DrawUI()
 
 					if (Button("Run iteration") && tessellator)
 					{
-						tessellator->ClosestNeighboursComputed() ? tessellator->RunFillingIterations(1) : tessellator->RunGrowingIterations(1);
+						tessellator->RunIterations(1);
 						UpdateMesh();
 					}
 					SameLine();
@@ -514,7 +472,7 @@ void SurfaceTriangulationDemo::DrawUI()
 					SameLine();
 					if (Button("Run tessellation until completion"))
 					{
-						tessellator->ComputeMesh();
+						tessellator->Run();
 					}
 				}
 				catch (const std::exception& e)
@@ -569,17 +527,20 @@ void SurfaceTriangulationDemo::SetLineWidth()
 
 void SurfaceTriangulationDemo::UpdateMesh()
 {
-	mesh.Update(mesh.GetMeshVertices(tessellator->GetMesh(), algorithmSettings.faceVisualization), GetSelectedObject().GetCenterVertex());
-	if (tessellator->ClosestNeighboursComputed())
+	if (algorithmSettings.faceVisualization == FaceVisualization::Normal)
+		tessellator->mesh.update_normals();
+
+	mesh.Update(mesh.GetMeshVertices(tessellator->mesh, algorithmSettings.faceVisualization), GetSelectedObject().GetCenterVertex());
+	if (tessellator->growingPhase.Completed())
 	{
-		closestNeighbours.Update(mesh.GetLineVertices(tessellator->GetMesh()), GetSelectedObject().GetCenterVertex());
+		closestNeighbours.Update(mesh.GetLineVertices(tessellator->mesh), GetSelectedObject().GetCenterVertex());
 	}
 }
 
 void SurfaceTriangulationDemo::SetTessellatedObect(Implicit::Object &object)
 {
-	tessellator.emplace(object, *this);
-	tessellator->SetRho(algorithmSettings.rho);
+	tessellator.emplace(object);
+	tessellator->growingPhase.SetRho(algorithmSettings.rho);
 	auto aabb = object.GetBoundingBox();
 	auto min = aabb.min() + object.GetCenterVertex(), max = aabb.max() + object.GetCenterVertex();
 	auto w = max.x - min.x, h = max.y - min.y, d = max.z - min.z;
@@ -600,12 +561,15 @@ void SurfaceTriangulationDemo::RunPendingIterations()
 	if (pendingIterations > 0)
 	{
 		const int iterations = std::min(ITERATIONS_PER_FRAME, pendingIterations);
-		const bool changed = tessellator->ClosestNeighboursComputed() ? !tessellator->RunFillingIterations(iterations) : !tessellator->RunGrowingIterations(iterations);
+		const bool inGrowingPhase = !tessellator->growingPhase.Completed();
+		tessellator->RunIterations(iterations);
 		pendingIterations -= iterations;
-		if (changed &&
-			algorithmSettings.realTimeUpdate)
+		if (inGrowingPhase && tessellator->growingPhase.Completed())
 		{
-			tessellator->UpdateNormals();
+			pendingIterations = 0;
+		}
+		if (algorithmSettings.realTimeUpdate)
+		{
 			UpdateMesh();
 		}
 	}
@@ -626,7 +590,7 @@ OpenMesh::SmartFaceHandle SurfaceTriangulationDemo::QueryClickedFace()
 
 	return OpenMesh::SmartFaceHandle(
 		mesh.GetFaceIndexFromColor((int)(RGBA[0] * 255.f), (int)(RGBA[1] * 255.f), (int)(RGBA[2] * 255.f)),
-		&tessellator->GetMesh()
+		&tessellator->mesh
 	);
 }
 
@@ -645,7 +609,7 @@ void SurfaceTriangulationDemo::onDisplay()
 	instance->RunPendingIterations();
 
 	// Drawing
-	if (instance->tessellator->ClosestNeighboursComputed())
+	if (instance->tessellator->growingPhase.Completed())
 	{
 		instance->DrawMesh(instance->closestNeighbours, true, false);
 	}

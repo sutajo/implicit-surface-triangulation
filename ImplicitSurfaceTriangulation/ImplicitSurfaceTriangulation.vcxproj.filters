@@ -81,7 +81,7 @@
     <ClInclude Include="Include\glmMeshKdTree.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\ImplicitSurfaceTriangulation.hpp">
+    <ClInclude Include="Include\KarkanisStewartTessellator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Include\Triangle.hpp">
@@ -96,12 +96,18 @@
     <ClInclude Include="Include\Plane.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FillingPhase.hpp">
+    <ClInclude Include="Include\Phase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GrowingPhase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\FillingPhase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ImplicitSurfaceTriangulation.cpp">
+    <ClCompile Include="KarkanisStewartTessellator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ImplicitSystem\src\Aabb.cpp">
@@ -162,6 +168,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Plane.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GrowingPhase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\FillingPhase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

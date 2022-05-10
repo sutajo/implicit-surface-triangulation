@@ -34,6 +34,9 @@ struct Triangle
 	glm::dvec3 ProjectPoint(const glm::dvec3& point) const;
 	double GetDistanceFrom(const glm::dvec3& point) const;
 
+	static glm::dvec3 getItp(const glm::dvec3& a, const glm::dvec3& b, const glm::dvec3& normalizedTangent, double equalSideLength);
+	static glm::dvec3 getEtp(const glm::dvec3& a, const glm::dvec3& b, const glm::dvec3& normalizedTangent);
+
 	std::string to_string() const; 
 };
 

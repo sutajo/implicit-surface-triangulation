@@ -4,6 +4,7 @@
 #define FMT_HEADER_ONLY
 #include <fmt/format.h>
 #include <array>
+#include <iostream>
 
 std::tuple<double, double, double> Triangle::GetSideLengths() const
 {
@@ -147,6 +148,24 @@ double Triangle::GetDistanceFrom(const glm::dvec3& point) const
     const glm::dvec3 c = ProjectPoint(point);
     const double q = glm::distance(c, point);
     return q;
+}
+
+glm::dvec3 Triangle::getItp(const glm::dvec3& a, const glm::dvec3& b, const glm::dvec3& normalizedTangent, double equalSideLength)
+{
+    const glm::dvec3 midPoint = (a + b) / 2.;
+    const double midDistance = glm::distance(midPoint, b);
+    if (midDistance >= equalSideLength) {
+        std::cerr << "equalSideLength is too small\n";
+        equalSideLength = midDistance;
+    }
+
+    const double height = sqrt(equalSideLength * equalSideLength - midDistance * midDistance);
+    return midPoint + height * normalizedTangent;
+}
+
+glm::dvec3 Triangle::getEtp(const glm::dvec3& a, const glm::dvec3& b, const glm::dvec3& normalizedTangent)
+{
+    return getItp(a, b, normalizedTangent, glm::distance(a, b));
 }
 
 template <>

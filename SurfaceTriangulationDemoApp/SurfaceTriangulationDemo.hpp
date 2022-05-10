@@ -5,7 +5,7 @@
 #include "GlutInitializer.hpp"
 #include "Mesh.hpp"
 #include "Box.hpp"
-#include "ImplicitSurfaceTriangulation.hpp"
+#include "KarkanisStewartTessellator.hpp"
 #include "ImGuiLog.hpp"
 
 #include <chrono>
@@ -20,7 +20,6 @@ struct AlgorithmVisualizationSettings
 	bool freeCamera = false;
 
 	float rho = 0.1f;
-	float maxSideLength = 0.0;
 	int selectedObjectIndex = 0;
 	int nIterations = 500;
 	bool realTimeUpdate = true;
@@ -33,7 +32,7 @@ struct InputState
 	bool rightButtonHeld = false;
 };
 
-class SurfaceTriangulationDemo : public Implicit::CurvatureTessellator::Visitor
+class SurfaceTriangulationDemo
 {
 private:
 	// Glut handle
@@ -62,7 +61,7 @@ private:
 	AlgorithmVisualizationSettings algorithmSettings;
 
 	// The tessellation algorithm
-	std::optional<Implicit::CurvatureTessellator> tessellator;
+	std::optional<Implicit::Tessellation::KarkanisStewartTessellator> tessellator;
 
 	// Glut callbacks
 	static void onMouse(int button, int state, int x, int y);
@@ -75,10 +74,6 @@ private:
 
 	// Visitor functions
 	ImGuiLog log;
-	virtual void SeedTriangleGenerated(const Triangle& seed) override;
-	virtual void NewTriangleGenerated() override;
-	virtual void EarCut() override;
-	virtual void IterationEnded(bool meshChanged) override;
 
 	void DrawUI();
 	void DrawMesh(Mesh& mesh, bool drawLines, bool drawFill = true);

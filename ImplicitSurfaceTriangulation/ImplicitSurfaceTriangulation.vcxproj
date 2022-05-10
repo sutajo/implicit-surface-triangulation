@@ -163,7 +163,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="FillingPhase.hpp" />
     <ClInclude Include="ImplicitSystem\inc\Aabb.hpp" />
     <ClInclude Include="ImplicitSystem\inc\fieldFunctions.hpp" />
     <ClInclude Include="ImplicitSystem\inc\floatlibs.hpp" />
@@ -182,17 +181,21 @@
     <ClInclude Include="ImplicitSystem\inc\ImplicitTranslate.hpp" />
     <ClInclude Include="ImplicitSystem\inc\ImplicitUnion.hpp" />
     <ClInclude Include="ImplicitSystem\inc\VecPrint.hpp" />
+    <ClInclude Include="Include\FillingPhase.hpp" />
     <ClInclude Include="Include\glmMeshAdaptor.hpp" />
     <ClInclude Include="Include\glmMeshKdTree.hpp" />
+    <ClInclude Include="Include\GrowingPhase.hpp" />
     <ClInclude Include="Include\ImplicitDifferentiated.hpp" />
-    <ClInclude Include="Include\ImplicitSurfaceTriangulation.hpp" />
+    <ClInclude Include="Include\KarkanisStewartTessellator.hpp" />
+    <ClInclude Include="Include\Phase.hpp" />
     <ClInclude Include="Include\Plane.hpp" />
     <ClInclude Include="Include\Triangle.hpp" />
     <ClInclude Include="Include\VectorMath.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glmMeshAdaptor.cpp" />
-    <ClCompile Include="ImplicitSurfaceTriangulation.cpp">
+    <ClCompile Include="GrowingPhase.cpp" />
+    <ClCompile Include="KarkanisStewartTessellator.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -212,6 +215,7 @@
     <ClCompile Include="ImplicitSystem\src\ImplicitTranslate.cpp" />
     <ClCompile Include="ImplicitSystem\src\ImplicitUnion.cpp" />
     <ClCompile Include="ImplicitSystem\src\VecPrint.cpp" />
+    <ClCompile Include="Include\FillingPhase.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="VectorMath.cpp" />
