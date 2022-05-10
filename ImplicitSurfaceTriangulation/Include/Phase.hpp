@@ -30,10 +30,14 @@ public:
 		Phase<IntermediateMesh, OutputMesh> &second_phase) 
 		: Phase<InputMesh, OutputMesh>(first_phase.GetInput(), second_phase.GetOutput()), first_phase(first_phase), second_phase(second_phase)
 	{
-		first_phase.Start();
 	}
 
 	virtual ~PhaseChain() {}
+
+	virtual void Start() override
+	{
+		first_phase.Start();
+	}
 
 	virtual void RunIterations(int iterations) override
 	{

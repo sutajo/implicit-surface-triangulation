@@ -220,14 +220,30 @@ bool Implicit::Tessellation::GrowingPhase::applyEarCutting(const OpenMesh::Smart
     return earCut;
 }
 
+void Implicit::Tessellation::GrowingPhase::Start()
+{
+    generateSeedTriangle();
+}
+
+void Implicit::Tessellation::GrowingPhase::Run()
+{
+    for (auto edge = mesh.edges_sbegin();
+        edge != mesh.edges_end();
+        ++edge)
+    {
+        OpenMesh::SmartFaceHandle newFace;
+        if (expandEdge(*edge, newFace))
+        {
+            applyEarCutting(newFace);
+        }
+    }
+
+    meshChanged = false; // That's a lie
+}
+
 void Implicit::Tessellation::GrowingPhase::RunIterations(int iterations)
 {
     meshChanged = false;
-
-    if (mesh.n_faces() == 0) {
-        generateSeedTriangle();
-        meshChanged = true;
-    }
 
     int iteration = 0;
     for (auto edge = mesh.edges_sbegin();

@@ -19,7 +19,7 @@ struct AlgorithmVisualizationSettings
 	bool showBoundingBox = true;
 	bool freeCamera = false;
 
-	float rho = 0.1f;
+	float rho = 0.4f;
 	int selectedObjectIndex = 0;
 	int nIterations = 500;
 	bool realTimeUpdate = true;

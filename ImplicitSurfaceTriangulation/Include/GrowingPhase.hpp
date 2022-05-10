@@ -17,6 +17,8 @@ namespace Implicit
 		public:
 			GrowingPhase(GlmPolyMesh& mesh, Object& object);
 			virtual ~GrowingPhase() {}
+			virtual void Start() override;
+			virtual void Run() override;
 			virtual void RunIterations(int iterations) override;
 			virtual bool Completed() const override;
 

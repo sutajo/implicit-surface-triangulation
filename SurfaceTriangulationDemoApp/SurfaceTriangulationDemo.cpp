@@ -541,6 +541,7 @@ void SurfaceTriangulationDemo::SetTessellatedObect(Implicit::Object &object)
 {
 	tessellator.emplace(object);
 	tessellator->growingPhase.SetRho(algorithmSettings.rho);
+	tessellator->Start();
 	auto aabb = object.GetBoundingBox();
 	auto min = aabb.min() + object.GetCenterVertex(), max = aabb.max() + object.GetCenterVertex();
 	auto w = max.x - min.x, h = max.y - min.y, d = max.z - min.z;
