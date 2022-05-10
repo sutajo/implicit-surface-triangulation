@@ -193,6 +193,7 @@
     <ClInclude Include="Include\VectorMath.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FillingPhase.cpp" />
     <ClCompile Include="glmMeshAdaptor.cpp" />
     <ClCompile Include="GrowingPhase.cpp" />
     <ClCompile Include="KarkanisStewartTessellator.cpp">
@@ -215,7 +216,6 @@
     <ClCompile Include="ImplicitSystem\src\ImplicitTranslate.cpp" />
     <ClCompile Include="ImplicitSystem\src\ImplicitUnion.cpp" />
     <ClCompile Include="ImplicitSystem\src\VecPrint.cpp" />
-    <ClCompile Include="Include\FillingPhase.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="VectorMath.cpp" />

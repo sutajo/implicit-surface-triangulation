@@ -173,7 +173,7 @@
     <ClCompile Include="GrowingPhase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Include\FillingPhase.cpp">
+    <ClCompile Include="FillingPhase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
