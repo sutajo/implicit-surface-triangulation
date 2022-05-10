@@ -388,8 +388,8 @@ void SurfaceTriangulationDemo::DrawUI()
 				mesh.ResetRotation();
 				bb.ResetRotation();
 			}
-			SameLine();
-			Checkbox("Show bounding box of the surface", &algorithmSettings.showBoundingBox);
+			Checkbox("Show bounding box of the surface", &algorithmSettings.showBoundingBox); 
+			Checkbox("Show gap only", &algorithmSettings.showGapOnly);
 			if (Combo("Face visualization mode", (int*)&algorithmSettings.faceVisualization, "Id\0Normals\0Face creation method\0"))
 			{
 				UpdateMesh();
@@ -437,6 +437,9 @@ void SurfaceTriangulationDemo::DrawUI()
 			{
 				try
 				{
+					Checkbox("Update mesh in real time", &algorithmSettings.realTimeUpdate);
+					SameLine();
+					Checkbox("Always run growing phase", &algorithmSettings.alwaysRunGrowingPhase);
 					if (Button("Reset mesh"))
 					{
 						SetTessellatedObect(GetSelectedObject());
@@ -444,10 +447,6 @@ void SurfaceTriangulationDemo::DrawUI()
 					SameLine();
 					PushItemWidth(150);
 					SliderInt("N", &algorithmSettings.nIterations, 1, 10000);
-					SameLine();
-					Checkbox("Update mesh in real time", &algorithmSettings.realTimeUpdate);
-					
-					Separator();
 					if (pendingIterations > 0)
 					{
 						TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Pending iterations: %d", pendingIterations);
@@ -542,6 +541,11 @@ void SurfaceTriangulationDemo::SetTessellatedObect(Implicit::Object &object)
 	tessellator.emplace(object);
 	tessellator->growingPhase.SetRho(algorithmSettings.rho);
 	tessellator->Start();
+	if (algorithmSettings.alwaysRunGrowingPhase)
+	{
+		tessellator->growingPhase.Run();
+		tessellator->fillingPhase.Start();
+	}
 	auto aabb = object.GetBoundingBox();
 	auto min = aabb.min() + object.GetCenterVertex(), max = aabb.max() + object.GetCenterVertex();
 	auto w = max.x - min.x, h = max.y - min.y, d = max.z - min.z;
@@ -614,7 +618,10 @@ void SurfaceTriangulationDemo::onDisplay()
 	{
 		instance->DrawMesh(instance->closestNeighbours, true, false);
 	}
-	instance->DrawMesh(instance->mesh, false);
+	if (!instance->algorithmSettings.showGapOnly)
+	{
+		instance->DrawMesh(instance->mesh, false);
+	}
 	instance->DrawUI();
 	if (instance->algorithmSettings.showBoundingBox)
 	{
