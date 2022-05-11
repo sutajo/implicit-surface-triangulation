@@ -150,17 +150,20 @@ std::vector<Vertex> Mesh::GetLineVertices(const GlmPolyMesh& mesh) const
 				// Closest neighbour relationship
 				{
 					const auto closestNeighbour = mesh.data(heh.to()).closestNeighbour;
-					const bool is_bridge = mesh.data(closestNeighbour).closestNeighbour == heh.to();
+					if (closestNeighbour.is_valid())
+					{
+						const bool is_bridge = mesh.data(closestNeighbour).closestNeighbour == heh.to();
 
-					Vertex v1;
-					v1.Position = mesh.point(heh.to()) + offset_vector;
-					v1.Color = is_bridge ? glm::vec3(1.0f, 223.0f / 255.0f, 0.0f) : glm::vec3(1.0f, 140.0f / 255.0f, 0.0f);
-					vertices.push_back(v1);
+						Vertex v1;
+						v1.Position = mesh.point(heh.to()) + offset_vector;
+						v1.Color = is_bridge ? glm::vec3(1.0f, 223.0f / 255.0f, 0.0f) : glm::vec3(1.0f, 140.0f / 255.0f, 0.0f);
+						vertices.push_back(v1);
 
-					Vertex v2;
-					v2.Position = mesh.point(closestNeighbour) + offset_vector;
-					v2.Color = is_bridge ? glm::vec3(1.0f, 223.0f / 255.0f, 0.0f) : glm::vec3(1.0f, 1.0f, 0.0f);
-					vertices.push_back(v2);
+						Vertex v2;
+						v2.Position = mesh.point(closestNeighbour) + offset_vector;
+						v2.Color = is_bridge ? glm::vec3(1.0f, 223.0f / 255.0f, 0.0f) : glm::vec3(1.0f, 1.0f, 0.0f);
+						vertices.push_back(v2);
+					}
 				}
 
 				heh = heh.next();

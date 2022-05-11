@@ -117,8 +117,8 @@ bool Implicit::Tessellation::GrowingPhase::expandEdge(OpenMesh::SmartEdgeHandle 
     const float sideLength = getRoc(newPoint) * rho;
     const auto interpolatedNormal = (object.Normal(edgeMidpoint) + object.Normal(equilateralPoint)) / 2.;
     const glm::dvec3 isoScelesPoint = Triangle::getItp(P0, P1, glm::normalize(glm::cross(edgeVector, interpolatedNormal)), sideLength);
-    assert(std::abs(glm::distance(isoScelesPoint, P0) - sideLength) <= 0.001f);
-    assert(std::abs(glm::distance(isoScelesPoint, P1) - sideLength) <= 0.001f);
+    //assert(std::abs(glm::distance(isoScelesPoint, P0) - sideLength) <= 0.001f);
+    //assert(std::abs(glm::distance(isoScelesPoint, P1) - sideLength) <= 0.001f);
 
     newPoint = object.Project(isoScelesPoint);
     assert(std::abs(object.Evaluate(newPoint)) <= 0.0001f);

@@ -39,6 +39,11 @@ namespace Implicit
 			OpenMesh::VertexHandle computeClosestNeighbour(OpenMesh::SmartHalfedgeHandle heh);
 
 			/*
+			Compute the closest neighbour of the every vertex of the face
+			*/
+			void updateClosestNeighbours(OpenMesh::SmartFaceHandle face);
+
+			/*
 			Compute closest neighbour relationships for the filling phase
 			*/
 			void computeClosestNeighbours();

@@ -87,12 +87,16 @@ OpenMesh::VertexHandle Implicit::Tessellation::FillingPhase::computeClosestNeigh
 	return closestNeighbour;
 }
 
+void Implicit::Tessellation::FillingPhase::updateClosestNeighbours(OpenMesh::SmartFaceHandle face)
+{
+	for (auto heh : face.halfedges())
+		mesh.data(heh.to()).closestNeighbour = computeClosestNeighbour(heh);
+}
+
 void Implicit::Tessellation::FillingPhase::computeClosestNeighbours()
 {
 	OpenMesh::SmartHalfedgeHandle heh_start = FindBoundaryHalfEdge(mesh);
-
 	std::vector<OpenMesh::VertexHandle> gapVertices;
-
 	auto heh = heh_start;
 	do
 	{
@@ -104,36 +108,37 @@ void Implicit::Tessellation::FillingPhase::computeClosestNeighbours()
 
 	gapKdTree.buildIndex();
 
-	heh = heh_start;
-	do
-	{
-		mesh.data(heh.to()).closestNeighbour = computeClosestNeighbour(heh);
-		heh = heh.next();
-	} while (heh != heh_start);
-
 	auto initial_gap = mesh.add_face(gapVertices);
 	if (!initial_gap.is_valid())
 		throw std::runtime_error("Can't create initial gap");
+
+	updateClosestNeighbours(initial_gap);
 
 	gaps.push_back(initial_gap);
 }
 
 bool Implicit::Tessellation::FillingPhase::isConvex(OpenMesh::SmartHalfedgeHandle toHalfedge)
 {
-	const double sectorAngle = mesh.calc_sector_angle(toHalfedge);
+	const auto pointNormal = object.Normal(mesh.point(toHalfedge.to()));
+	const auto e1 = mesh.calc_edge_vector(toHalfedge);
+	const auto e2 = mesh.calc_edge_vector(toHalfedge.next());
+	const double sectorAngle = glm::orientedAngle(e1, e2, pointNormal);
 	const bool isConvex = 0.0 <= sectorAngle && sectorAngle <= glm::radians(180.0);
 	return isConvex;
 }
 
 bool Implicit::Tessellation::FillingPhase::isNeighbour(OpenMesh::SmartHalfedgeHandle toHalfedge, OpenMesh::VertexHandle vertex)
 {
-	const bool isConvex = this->isConvex(toHalfedge);
 	const auto planePoint = mesh.point(toHalfedge.to());
 	const auto pointNormal = object.Normal(planePoint);
-	const Plane pv1{ planePoint, pointNormal, mesh.calc_edge_vector(toHalfedge) };
-	const Plane pv2{ planePoint, pointNormal, mesh.calc_edge_vector(toHalfedge.next()) };
-	const bool isAbovePv1 = pv1.IsAbove(mesh.point(vertex), mesh.calc_edge_length(toHalfedge) / 10.0);
-	const bool isAbovePv2 = pv2.IsAbove(mesh.point(vertex), mesh.calc_edge_length(toHalfedge.next()) / 10.0);
+	const auto e1 = mesh.calc_edge_vector(toHalfedge);
+	const auto e2 = mesh.calc_edge_vector(toHalfedge.next());
+	const double sectorAngle = glm::orientedAngle(e1, e2, pointNormal);
+	const bool isConvex = 0.0 <= sectorAngle && sectorAngle <= glm::radians(180.0);
+	const Plane pv1{ planePoint, pointNormal, e1 };
+	const Plane pv2{ planePoint, pointNormal, e2 };
+	const bool isAbovePv1 = pv1.IsAbove(mesh.point(vertex), glm::length(e1) / 10.0);
+	const bool isAbovePv2 = pv2.IsAbove(mesh.point(vertex), glm::length(e2) / 10.0);
 	if (isConvex) {
 		return isAbovePv1 && isAbovePv2;
 	}
@@ -288,24 +293,53 @@ bool Implicit::Tessellation::FillingPhase::XFilling(OpenMesh::FaceHandle gap)
 				auto d3 = glm::distance(mesh.point(v3), mesh.point(v4));
 				auto d = glm::distance(mesh.point(v1), mesh.point(v4));
 
+				auto newface_halfege = OpenMesh::make_smart(mesh.insert_edge(heh.prev(), heh_next_next.next()), &mesh);
+				auto original_gap = newface_halfege.face();
+				auto xfilled_face = newface_halfege.opp().face();
+
+				std::cout << "XFilling: Big face: " << original_gap.idx() << std::endl;
+				std::cout << "XFilling: Small face: " << xfilled_face.idx() << std::endl;
+
+				mesh.data(xfilled_face).faceCreationMethod = FaceCreationMethod::XFilling;
+				meshChanged = true;
+
+				heh_start = newface_halfege.prev();
+				heh = heh_start;
+
 				if (d > 1.5 * std::max({ d1, d2, d3 }))
 				{
 					auto midpoint_vertex = (mesh.point(v1) + mesh.point(v4)) / 2.;
 					midpoint_vertex = object.Project(midpoint_vertex);
 					auto mv_handle = mesh.add_vertex(midpoint_vertex);
-					if (!mesh.add_face(v1, v2, mv_handle).is_valid() ||
-						!mesh.add_face(v2, v3, mv_handle).is_valid() ||
-						!mesh.add_face(v3, v4, mv_handle).is_valid())
-						throw std::runtime_error("Failed to create new faces");
+
+					mesh.split_edge(newface_halfege.edge(), mv_handle);
+
+					auto to_mv = newface_halfege.opp();
+					auto to_mv_prev = to_mv.prev();
+
+					assert(to_mv.to() == mv_handle);
+					assert(to_mv_prev.from() == v3);
+
+					// Add 3 new faces
+					to_mv = OpenMesh::make_smart(mesh.insert_edge(to_mv, to_mv_prev), &mesh).opp();
+					to_mv_prev = to_mv.prev();
+					mesh.data(to_mv.opp().face()).faceCreationMethod = FaceCreationMethod::XFilling;
+
+					assert(to_mv.is_valid());
+					assert(to_mv.to() == mv_handle);
+					assert(to_mv_prev.from() == v2);
+
+					to_mv = OpenMesh::make_smart(mesh.insert_edge(to_mv, to_mv_prev), &mesh);
+					assert(to_mv.is_valid());
+
+					mesh.data(to_mv.face()).faceCreationMethod = FaceCreationMethod::XFilling;
+
+					// Update closest neighbours for big face
+					addGapVertex(mv_handle, true);
+					updateClosestNeighbours(original_gap);
 				}
 				else
 				{
-					auto newface_halfege = OpenMesh::make_smart(mesh.insert_edge(heh.prev(), heh_next_next.next()), &mesh);
-					auto xfilled_face = newface_halfege.opp().face();
-
-					std::cout << "XFilling: Big face: " << newface_halfege.face().idx() << std::endl;
-					std::cout << "XFilling: Small face: " << xfilled_face.idx() << std::endl;
-
 					auto& v1_cn = mesh.data(v1).closestNeighbour;
 					if (v1_cn == v4 || v1_cn == v3)
 						v1_cn = computeClosestNeighbour(newface_halfege.prev());
@@ -313,13 +347,7 @@ bool Implicit::Tessellation::FillingPhase::XFilling(OpenMesh::FaceHandle gap)
 					if (v4_cn == v1 || v4_cn == v2)
 						v4_cn = computeClosestNeighbour(newface_halfege);
 
-					mesh.data(xfilled_face).faceCreationMethod = FaceCreationMethod::XFilling;
 					gaps.push_back(xfilled_face);
-
-					meshChanged = true;
-
-					heh_start = newface_halfege.prev();
-					heh = heh_start;
 				}
 			}
 		}
