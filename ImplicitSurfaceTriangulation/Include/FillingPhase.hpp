@@ -1,8 +1,8 @@
 #pragma once
 
+#include "ClosestNeighbours.hpp"
 #include "ImplicitObject.hpp"
 #include "glmMeshAdaptor.hpp"
-#include "glmMeshKdTree.hpp"
 #include "Phase.hpp"
 #include <deque>
 
@@ -15,54 +15,15 @@ namespace Implicit
 		private:
 			GlmPolyMesh& mesh;
 			Object& object;
+			ClosestNeighbours closestNeighbours;
 		public:
 			FillingPhase(GlmPolyMesh& mesh, Object& object);
 			virtual ~FillingPhase() {}
 			virtual void Start() override;
 			virtual void RunIterations(int iterations) override;
 			virtual bool Completed() const override;
+			const ClosestNeighbours& GetClosestNeighbours() const;
 		private:
-
-			/*
-			Add a mesh vertex to the gap
-			*/
-			OpenMesh::VertexHandle addGapVertex(OpenMesh::VertexHandle vertex, bool rebuildKdTree = false);
-
-			/*
-			Remove a mesh vertex from the gap
-			*/
-			void removeGapVertex(OpenMesh::VertexHandle vertex);
-
-			/*
-			Compute the closest neighbour of the to vertex of the halfedge
-			*/
-			OpenMesh::VertexHandle computeClosestNeighbour(OpenMesh::SmartHalfedgeHandle heh);
-
-			/*
-			Compute the closest neighbour of the every vertex of the face
-			*/
-			void updateClosestNeighbours(OpenMesh::SmartFaceHandle face);
-
-			/*
-			Compute closest neighbour relationships for the filling phase
-			*/
-			void computeClosestNeighbours();
-
-			/*
-			Is the to vertex of the halfedge convex?
-			*/
-			bool isConvex(OpenMesh::SmartHalfedgeHandle toHalfedge);
-
-			/*
-			Is the vertex a neigbour of the "to" vertex of the halfedge?
-			*/
-			bool isNeighbour(OpenMesh::SmartHalfedgeHandle toHalfedge, OpenMesh::VertexHandle vertex);
-
-			/*
-			Is the vertex part of a bridge?
-			*/
-			bool isBridge(OpenMesh::VertexHandle vertex);
-
 			/*
 			Gap list for filling phase
 			*/
@@ -102,15 +63,6 @@ namespace Implicit
 			Filling phase heuristic 7: Concave Vertex Bisection
 			*/
 			bool ConcaveVertexBisection(OpenMesh::FaceHandle gap);
-
-			/*
-			KdTree with the gap points
-			*/
-			GlmPolyMesh gapPoints;
-
-			GlmPolyMeshKdTreeAdaptor gapKdTreeAdaptor{ gapPoints };
-
-			GlmPolyMeshKdTree gapKdTree{ 3, gapKdTreeAdaptor };
 		};
 	}
 }

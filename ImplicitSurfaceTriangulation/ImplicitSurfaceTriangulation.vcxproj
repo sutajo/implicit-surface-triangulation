@@ -181,6 +181,7 @@
     <ClInclude Include="ImplicitSystem\inc\ImplicitTranslate.hpp" />
     <ClInclude Include="ImplicitSystem\inc\ImplicitUnion.hpp" />
     <ClInclude Include="ImplicitSystem\inc\VecPrint.hpp" />
+    <ClInclude Include="Include\ClosestNeighbours.hpp" />
     <ClInclude Include="Include\FillingPhase.hpp" />
     <ClInclude Include="Include\glmMeshAdaptor.hpp" />
     <ClInclude Include="Include\glmMeshKdTree.hpp" />
@@ -193,6 +194,7 @@
     <ClInclude Include="Include\VectorMath.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ClosestNeighbours.cpp" />
     <ClCompile Include="FillingPhase.cpp" />
     <ClCompile Include="glmMeshAdaptor.cpp" />
     <ClCompile Include="GrowingPhase.cpp" />

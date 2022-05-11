@@ -532,7 +532,7 @@ void SurfaceTriangulationDemo::UpdateMesh()
 	mesh.Update(mesh.GetMeshVertices(tessellator->mesh, algorithmSettings.faceVisualization), GetSelectedObject().GetCenterVertex());
 	if (tessellator->growingPhase.Completed())
 	{
-		closestNeighbours.Update(mesh.GetLineVertices(tessellator->mesh), GetSelectedObject().GetCenterVertex());
+		closestNeighbours.Update(mesh.GetLineVertices(tessellator->mesh, tessellator->fillingPhase.GetClosestNeighbours()), GetSelectedObject().GetCenterVertex());
 	}
 }
 

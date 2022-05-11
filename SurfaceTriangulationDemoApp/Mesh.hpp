@@ -2,6 +2,7 @@
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include "glmMeshAdaptor.hpp"
+#include "ClosestNeighbours.hpp"
 
 #include <GL/glew.h>
 #include <glm/gtc/quaternion.hpp>
@@ -48,7 +49,7 @@ public:
 	void Update(const std::vector<Vertex>& vertices, glm::vec3 center);
 	void Update(const std::vector<Vertex>& vertices);
 	std::vector<Vertex> GetMeshVertices(const GlmPolyMesh& mesh, FaceVisualization visualization = FaceVisualization::Id) const;
-	std::vector<Vertex> GetLineVertices(const GlmPolyMesh& mesh) const;
+	std::vector<Vertex> GetLineVertices(const GlmPolyMesh& mesh, const Implicit::Tessellation::ClosestNeighbours& closestNeighbours) const;
 	const glm::mat4& GetWorldMat();
 	void RotateInCameraSpace(int relx, int rely, const Camera& camera);
 	void ResetRotation() { orientation = glm::vec3(0.0, 0.0, 0.0); UpdateWorldMat(); }

@@ -6,6 +6,8 @@
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
 #include <OpenMesh/Core/Utils/vector_traits.hh>
 
+#include <unordered_map>
+
 // OpenMesh vertex traits for glm::vec3
 namespace OpenMesh {
 	template<>
@@ -40,15 +42,22 @@ enum class FaceCreationMethod
 	ConcaveVertexBisection
 };
 
+namespace Implicit
+{
+	namespace Tessellation
+	{
+		class ClosestNeighbours;
+	}
+}
 
 // OpenMesh vertex
 struct GlmAdaptor : public OpenMesh::DefaultTraits
 {
 	using Point = glm::dvec3;
 	using Normal = glm::dvec3;
+	HalfedgeAttributes(OpenMesh::Attributes::PrevHalfedge);
 	VertexTraits
 	{
-		OpenMesh::VertexHandle closestNeighbour;
 		OpenMesh::VertexHandle connectedVertex;
 	};
 	EdgeTraits
@@ -57,7 +66,12 @@ struct GlmAdaptor : public OpenMesh::DefaultTraits
 	};
 	FaceTraits
 	{
+		friend class Implicit::Tessellation::ClosestNeighbours;
+
 		FaceCreationMethod faceCreationMethod;
+
+	private:
+		std::unordered_map<OpenMesh::VertexHandle, OpenMesh::VertexHandle> closestNeighbours;
 	};
 };
 

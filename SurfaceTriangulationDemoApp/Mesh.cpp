@@ -110,7 +110,7 @@ std::vector<Vertex> Mesh::GetMeshVertices(const GlmPolyMesh& mesh, FaceVisualiza
 	return vertices;
 }
 
-std::vector<Vertex> Mesh::GetLineVertices(const GlmPolyMesh& mesh) const
+std::vector<Vertex> Mesh::GetLineVertices(const GlmPolyMesh& mesh, const Implicit::Tessellation::ClosestNeighbours& closestNeighbours) const
 {
 	std::vector<Vertex> vertices;
 	vertices.reserve(mesh.n_edges());
@@ -149,10 +149,10 @@ std::vector<Vertex> Mesh::GetLineVertices(const GlmPolyMesh& mesh) const
 
 				// Closest neighbour relationship
 				{
-					const auto closestNeighbour = mesh.data(heh.to()).closestNeighbour;
+					const auto closestNeighbour = closestNeighbours(heh);
 					if (closestNeighbour.is_valid())
 					{
-						const bool is_bridge = mesh.data(closestNeighbour).closestNeighbour == heh.to();
+						const bool is_bridge = closestNeighbours.IsBridge(heh);
 
 						Vertex v1;
 						v1.Position = mesh.point(heh.to()) + offset_vector;
