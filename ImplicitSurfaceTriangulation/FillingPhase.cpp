@@ -1,5 +1,6 @@
 #include "Plane.hpp"
 #include "FillingPhase.hpp"
+#include <shobjidl_core.h>
 
 Implicit::Tessellation::FillingPhase::FillingPhase(GlmPolyMesh& mesh, Object& object) : 
 	Phase(mesh, mesh),
@@ -42,9 +43,10 @@ void Implicit::Tessellation::FillingPhase::RunIterations(int iterations)
 		gaps.pop_front();
 
 		SmallPolygonFilling(gap) ||
-		//SubdivisionOnBridges(gap) ||
+		SubdivisionOnBridges(gap) ||
 		XFilling(gap) ||
 		EarFilling(gap) ||
+		ConvexPolygonFilling(gap) ||
 		RelaxedEarFilling(gap) ||
 		ConcaveVertexBisection(gap);
 	}
@@ -127,25 +129,25 @@ bool Implicit::Tessellation::FillingPhase::SmallPolygonFilling(OpenMesh::FaceHan
 bool Implicit::Tessellation::FillingPhase::SubdivisionOnBridges(OpenMesh::FaceHandle gap)
 {
 	bool meshChanged = false;
-	/*
 
 	auto heh_start = OpenMesh::make_smart(mesh.halfedge_handle(gap), &mesh);
 	auto heh = heh_start;
 	do
 	{
-		auto v = heh.to();
-		auto closestNeighbour = OpenMesh::make_smart(mesh.data(v).closestNeighbour, &mesh);
+		auto closestNeighbour = OpenMesh::make_smart(closestNeighbours(heh), &mesh);
 		const bool separated = heh.next().next().to() != closestNeighbour && heh.prev().from() != closestNeighbour;
-		if (isBridge(v) && separated)
+		if (closestNeighbours.IsBridge(heh) && separated)
 		{
-			auto closestNeighbour_heh = closestNeighbour.outgoing_halfedges().first([&](OpenMesh::HalfedgeHandle h) { return mesh.face_handle(h) == gap; });
+			auto closestNeighbour_heh = closestNeighbour.outgoing_halfedges().first([&](OpenMesh::HalfedgeHandle h) { return mesh.face_handle(h) == heh.face(); });
 			assert(closestNeighbour_heh.is_valid());
 
 			auto newface_halfege = OpenMesh::make_smart(mesh.insert_edge(heh, closestNeighbour_heh), &mesh);
-			updateClosestNeighbours(newface_halfege.opp().face());
-			gaps.push_back(newface_halfege.opp().face());
-			heh_start = newface_halfege.prev();
+			closestNeighbours.UpdateClosestNeighbours(newface_halfege.face());
+			closestNeighbours.UpdateClosestNeighbours(newface_halfege.opp().face());
+
+			heh_start = heh.face() != newface_halfege.face() ? newface_halfege : newface_halfege.opp();
 			heh = heh_start;
+			gaps.push_back(newface_halfege.face());
 
 			meshChanged = true;
 			break;
@@ -158,7 +160,6 @@ bool Implicit::Tessellation::FillingPhase::SubdivisionOnBridges(OpenMesh::FaceHa
 	{
 		gaps.push_back(heh.face());
 	}
-	*/
 
 	return meshChanged;
 }
@@ -285,7 +286,18 @@ bool Implicit::Tessellation::FillingPhase::EarFilling(OpenMesh::FaceHandle gap)
 
 bool Implicit::Tessellation::FillingPhase::ConvexPolygonFilling(OpenMesh::FaceHandle gap)
 {
-	return false;
+	auto sgap = OpenMesh::make_smart(gap, &mesh);
+
+	for (auto heh : sgap.halfedges())
+		if (!closestNeighbours.IsConvex(heh))
+			return false;
+
+	// All vertices are convex, go!
+
+	const auto midpoint = mesh.calc_centroid(gap);
+	mesh.split(gap, mesh.add_vertex(midpoint));
+
+	return true;
 }
 
 bool Implicit::Tessellation::FillingPhase::RelaxedEarFilling(OpenMesh::FaceHandle gap)
