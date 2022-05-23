@@ -34,8 +34,8 @@ SurfaceTriangulationDemo::SurfaceTriangulationDemo(int argc, char* argv[]) : glu
 
 	// static Implicit::Sphere s(metaballFunction);
 
-	implicitObjects.push_back({ "Sphere", std::make_unique<Implicit::Sphere>(linearFunction) });
-	implicitObjects.push_back({ "Torus" , std::make_unique<Implicit::Torus>()                }) ;
+	implicitObjects.push_back({ "Sphere", std::make_unique<Implicit::Sphere>()  });
+	implicitObjects.push_back({ "Torus" , std::make_unique<Implicit::Torus>()   }) ;
 	// implicitObjects.push_back({ "Translate" , std::make_unique<Implicit::Scale>(&s, glm::dvec3(0.5, 0.5, 0.5)) });
 	
 	/*
