@@ -135,28 +135,27 @@ bool Implicit::Tessellation::FillingPhase::SubdivisionOnBridges(OpenMesh::FaceHa
 
 	auto heh_start = OpenMesh::make_smart(mesh.halfedge_handle(gap), &mesh);
 	auto heh = heh_start;
+	auto hehBackwards = heh_start;
 	do
 	{
 		auto closestNeighbour = OpenMesh::make_smart(closestNeighbours(heh), &mesh);
 		const bool separated = heh.next().next().to() != closestNeighbour && heh.prev().from() != closestNeighbour;
 		if (closestNeighbours.IsBridge(heh) && separated)
 		{
-			//std::cout << "SubdivisionOnBridges: " << gap.idx() << std::endl;
-			mesh.data(heh.opp().face()).faceCreationMethod = FaceCreationMethod::Seed;
+			while (hehBackwards.from() != closestNeighbour)
+				hehBackwards = hehBackwards.prev();
 
-			auto closestNeighbour_heh = closestNeighbour.outgoing_halfedges().first([&](OpenMesh::HalfedgeHandle h) { return mesh.face_handle(h) == heh.face(); });
-			assert(closestNeighbour_heh.is_valid());
-
-			auto newface_halfege = OpenMesh::make_smart(mesh.insert_edge(heh, closestNeighbour_heh), &mesh);
+			auto newface_halfege = OpenMesh::make_smart(mesh.insert_edge(heh, hehBackwards), &mesh);
 			closestNeighbours.UpdateClosestNeighbours(newface_halfege.face());
 			closestNeighbours.UpdateClosestNeighbours(newface_halfege.opp().face());
 
-			heh_start = heh.face() != newface_halfege.face() ? newface_halfege : newface_halfege.opp();
+			heh_start = newface_halfege.face().valence() > newface_halfege.opp().face().valence() ? newface_halfege : newface_halfege.opp();
 			heh = heh_start;
-			gaps.push_back(newface_halfege.face());
+			hehBackwards = heh_start;
+
+			gaps.push_back(heh_start.opp().face());
 
 			meshChanged = true;
-			break;
 		}
 
 		heh = heh.next();

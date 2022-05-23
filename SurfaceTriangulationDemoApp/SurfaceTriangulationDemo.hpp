@@ -18,11 +18,11 @@ struct AlgorithmVisualizationSettings
 	// Kiterjesztett élek: zöld és piros között átmenet attól függően, hogy mennyire jól sikerült az él
 	bool showBoundingBox = true;
 	bool freeCamera = false;
-	bool showGapOnly = false;
+	bool showGapOnly = true;
 	bool alwaysRunGrowingPhase = true;
 
 	float rho = 0.4f;
-	int selectedObjectIndex = 1;
+	int selectedObjectIndex = 0;
 	int nIterations = 500;
 	bool realTimeUpdate = true;
 	FaceVisualization faceVisualization = FaceVisualization::CreationMethod;
