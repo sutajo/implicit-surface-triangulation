@@ -166,9 +166,10 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 
 
 	ImGui::Text("Clicked face id: %d", clickedFace.idx());
+	auto& glmMesh = tessellator->mesh;
+	ImGui::Text("Face creation method: %d",  glmMesh.data(clickedFace).faceCreationMethod);
 
 	auto vertices = clickedFace.vertices().to_array<3>();
-	auto& glmMesh = tessellator->mesh;
 	auto triangle = Triangle{ glmMesh.point(vertices[0]), glmMesh.point(vertices[1]), glmMesh.point(vertices[2]) };
 
 	ImGui::Text("A (Idx %d): (%3f, %3f, %3f)\nB (Idx %d): (%3f, %3f, %3f)\nC (Idx %d): (%3f, %3f, %3f)",

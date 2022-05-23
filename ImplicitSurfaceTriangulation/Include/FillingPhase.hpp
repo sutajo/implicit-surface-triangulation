@@ -47,7 +47,7 @@ namespace Implicit
 			/*
 			Filling phase heuristic 4: Ear Filling
 			*/
-			bool EarFilling(OpenMesh::FaceHandle gap);
+			bool EarFilling(OpenMesh::FaceHandle gap, bool relaxed);
 
 			/*
 			Filling phase heuristic 5: Convex Polygon Filling
@@ -56,8 +56,8 @@ namespace Implicit
 
 			/*
 			Filling phase heuristic 6: Relaxed Ear Filling
+			See EarFilling
 			*/
-			bool RelaxedEarFilling(OpenMesh::FaceHandle gap);
 
 			/*
 			Filling phase heuristic 7: Concave Vertex Bisection

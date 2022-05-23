@@ -14,7 +14,7 @@ enum class FaceVisualization : int
 {
 	Id = 0,
 	Normal = 1,
-	EarCuttingFaces = 2
+	CreationMethod = 2
 };
 
 struct Vertex

@@ -79,7 +79,8 @@ namespace Implicit
 			bool meshChanged = true;
 
 			/*
-			Generates the seed triangle.
+			Generates the 
+			triangle.
 			*/
 			void generateSeedTriangle();
 

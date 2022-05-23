@@ -46,14 +46,30 @@ void Mesh::RenderAsLines()
 
 glm::vec3 Mesh::MapFaceCreationMethodColor(FaceCreationMethod method) const
 {
-	if (method == FaceCreationMethod::Seed)
+	switch (method)
+	{
+	case FaceCreationMethod::Seed:
 		return glm::vec3(1.0f, 0.3f, 0.0f);
-	else if (method == FaceCreationMethod::IsoscelesGrowing)
+	case FaceCreationMethod::IsoscelesGrowing:
 		return glm::vec3(0.0f, 1.0f, 0.0f);
-	else if (method == FaceCreationMethod::EarCutting)
+	case FaceCreationMethod::EarCutting:
 		return glm::vec3(1.0f, 1.0f, 0.0f);
-	else if (method == FaceCreationMethod::XFilling)
+	case FaceCreationMethod::SmallPolygonFilling:
+		return glm::vec3(140 / 255.f, 252 / 255.f, 3 / 255.f);
+	case FaceCreationMethod::XFilling:
 		return glm::vec3(1.0f, 140.0f / 255.0f, 0.0f);
+	case FaceCreationMethod::EarFilling:
+		return glm::vec3(244 / 255.f, 3 / 255.f, 252 / 255.f);
+	case FaceCreationMethod::ConvexPolygonFilling:
+		return glm::vec3(3 / 255.f, 252 / 255.f, 144 / 255.f);
+	case FaceCreationMethod::RelaxedEarFilling:
+		return glm::vec3(3 / 255.f, 252 / 255.f, 252 / 255.f);
+	case FaceCreationMethod::ConcaveVertexBisection:
+		return glm::vec3(3 / 255.f, 61 / 255.f, 252 / 255.f);
+	case FaceCreationMethod::SubdivisionOnBridges:
+	default:
+		throw std::runtime_error("Unhandled method");
+	}	
 }
 
 glm::vec3 Mesh::FindCenter(const std::vector<Vertex>& vertices)

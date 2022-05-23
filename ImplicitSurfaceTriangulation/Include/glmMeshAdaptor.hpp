@@ -30,16 +30,16 @@ namespace glm {
 
 enum class FaceCreationMethod
 {
-	Seed,
-	IsoscelesGrowing,
-	EarCutting,
-	SmallPolygonFilling,
-	SubdivisionOnBridges,
-	XFilling,
-	EarFilling,
-	ConvexPolygonFilling,
-	RelaxedEarFilling,
-	ConcaveVertexBisection
+	Seed = 0,
+	IsoscelesGrowing = 1,
+	EarCutting = 2,
+	SmallPolygonFilling = 3,
+	SubdivisionOnBridges = 4,
+	XFilling = 5,
+	EarFilling = 6,
+	ConvexPolygonFilling = 7,
+	RelaxedEarFilling = 8,
+	ConcaveVertexBisection = 9
 };
 
 namespace Implicit

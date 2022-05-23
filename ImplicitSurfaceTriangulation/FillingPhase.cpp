@@ -1,6 +1,6 @@
 #include "Plane.hpp"
 #include "FillingPhase.hpp"
-#include <shobjidl_core.h>
+#include <glm/gtx/vector_angle.hpp>
 
 Implicit::Tessellation::FillingPhase::FillingPhase(GlmPolyMesh& mesh, Object& object) : 
 	Phase(mesh, mesh),
@@ -45,9 +45,9 @@ void Implicit::Tessellation::FillingPhase::RunIterations(int iterations)
 		SmallPolygonFilling(gap) ||
 		SubdivisionOnBridges(gap) ||
 		XFilling(gap) ||
-		EarFilling(gap) ||
+		EarFilling(gap, false) ||
 		ConvexPolygonFilling(gap) ||
-		RelaxedEarFilling(gap) ||
+		EarFilling(gap, true) ||
 		ConcaveVertexBisection(gap);
 	}
 }
@@ -64,10 +64,13 @@ const Implicit::Tessellation::ClosestNeighbours& Implicit::Tessellation::Filling
 
 bool Implicit::Tessellation::FillingPhase::SmallPolygonFilling(OpenMesh::FaceHandle gap)
 {
-	if (mesh.valence(gap) != 4)
+	const auto valence = mesh.valence(gap);
+	if (valence == 3)
+		mesh.data(gap).faceCreationMethod = FaceCreationMethod::SmallPolygonFilling;
+	else if(mesh.valence(gap) != 4)
 		return false;
 
-	std::cout << "SmallPolygonFilling: " << gap.idx() << std::endl;
+	//std::cout << "SmallPolygonFilling: " << gap.idx() << std::endl;
 
 	bool allVerticesConvex = true;
 	for (auto heh : mesh.fh_range(gap))
@@ -138,6 +141,9 @@ bool Implicit::Tessellation::FillingPhase::SubdivisionOnBridges(OpenMesh::FaceHa
 		const bool separated = heh.next().next().to() != closestNeighbour && heh.prev().from() != closestNeighbour;
 		if (closestNeighbours.IsBridge(heh) && separated)
 		{
+			//std::cout << "SubdivisionOnBridges: " << gap.idx() << std::endl;
+			mesh.data(heh.opp().face()).faceCreationMethod = FaceCreationMethod::Seed;
+
 			auto closestNeighbour_heh = closestNeighbour.outgoing_halfedges().first([&](OpenMesh::HalfedgeHandle h) { return mesh.face_handle(h) == heh.face(); });
 			assert(closestNeighbour_heh.is_valid());
 
@@ -199,8 +205,8 @@ bool Implicit::Tessellation::FillingPhase::XFilling(OpenMesh::FaceHandle gap)
 
 			if (!closestNeighbourOutsideGap)
 			{
-				std::cout << "XFilling: Face: " << heh.face().idx() << std::endl;
-				std::cout << "XFilling: v1: " << v1.idx() << " v2:" << v2.idx() << " v3:" << v3.idx() << " v4:" << v4.idx() << std::endl;
+				//std::cout << "XFilling: Face: " << heh.face().idx() << std::endl;
+				//std::cout << "XFilling: v1: " << v1.idx() << " v2:" << v2.idx() << " v3:" << v3.idx() << " v4:" << v4.idx() << std::endl;
 
 				closestNeighbours.RemoveVertex(v2);
 				closestNeighbours.RemoveVertex(v3);
@@ -215,8 +221,8 @@ bool Implicit::Tessellation::FillingPhase::XFilling(OpenMesh::FaceHandle gap)
 				const auto original_gap = newface_halfege.face();
 				const auto xfilled_face = newface_halfege_opp.face();
 
-				std::cout << "XFilling: Big face: " << original_gap.idx() << std::endl;
-				std::cout << "XFilling: Small face: " << xfilled_face.idx() << std::endl;
+				//std::cout << "XFilling: Big face: " << original_gap.idx() << std::endl;
+				//std::cout << "XFilling: Small face: " << xfilled_face.idx() << std::endl;
 
 				mesh.data(xfilled_face).faceCreationMethod = FaceCreationMethod::XFilling;
 				meshChanged = true;
@@ -279,9 +285,91 @@ bool Implicit::Tessellation::FillingPhase::XFilling(OpenMesh::FaceHandle gap)
 	return meshChanged;
 }
 
-bool Implicit::Tessellation::FillingPhase::EarFilling(OpenMesh::FaceHandle gap)
+bool Implicit::Tessellation::FillingPhase::EarFilling(OpenMesh::FaceHandle gap, bool relaxed)
 {
-	return false;
+	auto sgap = OpenMesh::make_smart(gap, &mesh);
+	bool meshChanged = false;
+
+	OpenMesh::SmartHalfedgeHandle heh_start = OpenMesh::make_smart(mesh.halfedge_handle(gap), &mesh);
+	auto heh = heh_start;
+	do
+	{
+		auto v1 = heh.from();
+		auto v2 = heh.to();
+		auto v3 = heh.next().to();
+
+		const bool cn_v1_v3 = closestNeighbours(v1, heh.face()) == v3;
+		const bool cn_v3_v1 = closestNeighbours(v3, heh.face()) == v1;
+
+		const bool earNeedsFilling = relaxed ? (cn_v1_v3 || cn_v3_v1) : (cn_v1_v3 && cn_v3_v1);
+		if (earNeedsFilling)
+		{	
+			const auto heh_next_next = heh.next().next();
+			bool closestNeighbourOutsideGap = false;
+			// Check that neither v2 nor v3 is the closest neigbour of any vertex not in the current gap
+			auto heh_nn = heh_next_next;
+			while (heh_nn != heh.prev())
+			{
+				auto closestNeighbour = closestNeighbours(heh_nn);
+				closestNeighbourOutsideGap = closestNeighbour == v2;
+				if (closestNeighbourOutsideGap)
+					break;
+
+				heh_nn = heh_nn.next();
+			}
+
+			if (!closestNeighbourOutsideGap)
+			{
+				//std::cout << "EarFilling: Face: " << heh.face().idx() << std::endl;
+				//std::cout << "EarFilling: v1: " << v1.idx() << " v2:" << v2.idx() << " v3:" << v3.idx() << std::endl;
+
+				closestNeighbours.RemoveVertex(v2);
+
+				auto d1 = glm::distance(mesh.point(v1), mesh.point(v2));
+				auto d2 = glm::distance(mesh.point(v2), mesh.point(v3));
+				auto d = glm::distance(mesh.point(v1), mesh.point(v3));
+
+				const auto newface_halfege = OpenMesh::make_smart(mesh.insert_edge(heh.prev(), heh_next_next), &mesh);
+				const auto original_gap = newface_halfege.face();
+				const auto earfilled_face = newface_halfege.opp().face();
+
+				mesh.data(earfilled_face).faceCreationMethod = relaxed ? FaceCreationMethod::RelaxedEarFilling : FaceCreationMethod::EarFilling;
+				meshChanged = true;
+
+				heh_start = newface_halfege.prev();
+				heh = heh_start;
+
+				closestNeighbours.MoveFaceNeighbours(earfilled_face, original_gap);
+
+				if (d > 1.5 * std::max({ d1, d2 }))
+				{
+					const auto midpoint = (mesh.point(v1) + mesh.point(v3)) / 2.;
+					const auto mv_handle = mesh.add_vertex(midpoint);
+					mesh.split_edge(newface_halfege.edge(), mv_handle);
+
+					// Update closest neighbours for big face
+					closestNeighbours.AddVertex(mv_handle, true);
+					closestNeighbours.UpdateClosestNeighbours(original_gap);
+
+					gaps.push_back(earfilled_face);
+				}
+				else
+				{ 
+					closestNeighbours.UpdateClosestNeighbour(newface_halfege.prev());
+					closestNeighbours.UpdateClosestNeighbour(newface_halfege);
+				}
+			}
+		}
+
+		heh = heh.next();
+	} while (heh != heh_start);
+
+	if (meshChanged)
+	{
+		gaps.push_back(heh.face());
+	}
+
+	return meshChanged;
 }
 
 bool Implicit::Tessellation::FillingPhase::ConvexPolygonFilling(OpenMesh::FaceHandle gap)
@@ -293,6 +381,7 @@ bool Implicit::Tessellation::FillingPhase::ConvexPolygonFilling(OpenMesh::FaceHa
 			return false;
 
 	// All vertices are convex, go!
+	//std::cout << "ConvexPolygonFilling: " << gap.idx() << std::endl;
 
 	const auto midpoint = mesh.calc_centroid(gap);
 	mesh.split(gap, mesh.add_vertex(midpoint));
@@ -300,13 +389,81 @@ bool Implicit::Tessellation::FillingPhase::ConvexPolygonFilling(OpenMesh::FaceHa
 	return true;
 }
 
-bool Implicit::Tessellation::FillingPhase::RelaxedEarFilling(OpenMesh::FaceHandle gap)
-{
-	return false;
-}
-
 bool Implicit::Tessellation::FillingPhase::ConcaveVertexBisection(OpenMesh::FaceHandle gap)
 {
-	return false;
+	auto getInteriorAngle = [&](const auto &halfedge, const auto& e2) -> double
+	{
+		const auto pointNormal = object.Normal(mesh.point(halfedge.to()));
+		const auto e1 = mesh.calc_edge_vector(halfedge);
+		auto angle = acos(glm::dot(glm::normalize(e1), glm::normalize(e2)));
+		const auto cross = glm::cross(e1, e2);
+		if (glm::dot(pointNormal, cross) < 0) { // Or > 0
+			angle += M_PI;
+		}
+		return angle;
+	};
+
+	std::cout << "ConcaveVertexBisection: " << gap.idx() << std::endl;
+
+	auto sgap = OpenMesh::make_smart(gap, &mesh);
+
+	auto liah = sgap.halfedge(); // Largest interior angle halfedge
+	double lia = getInteriorAngle(liah, mesh.calc_edge_vector(liah.next()));
+	
+	for (auto heh : sgap.halfedges())
+	{
+		const double interiorAngle = getInteriorAngle(heh, mesh.calc_edge_vector(heh.next()));
+		if (interiorAngle > lia)
+		{
+			lia = interiorAngle;
+			liah = heh;
+		}
+	}
+
+	std::cout << "Interior angle: " << glm::degrees(lia) << std::endl;
+
+	const auto liahP = mesh.point(liah.to());
+	auto liahN = object.Normal(liahP);
+	const auto e1 = mesh.calc_edge_vector(liah);
+
+	double nearestBisection = std::numeric_limits<double>::max();
+	OpenMesh::HalfedgeHandle nearestBisector;
+	auto liah_prev = liah.prev();
+	for (auto heh : sgap.halfedges())
+	{
+		if (heh == liah.next() || heh == liah_prev ||  heh == liah)
+			continue;
+
+		const auto e2 = mesh.point(heh.to()) - liahP;
+		double sectorAngle = getInteriorAngle(heh, e2);
+		
+		const double bisectionDistance = std::abs(sectorAngle - lia / 2.);
+		if (!nearestBisector.is_valid() || bisectionDistance < nearestBisection)
+		{
+			nearestBisection = bisectionDistance;
+			nearestBisector = heh;
+		}
+	}
+	if (!nearestBisector.is_valid())
+		throw std::runtime_error("Impossible");
+
+	std::cout << "Closest bisector: " << glm::degrees(nearestBisection) << std::endl;
+
+	const auto newface_halfege = OpenMesh::make_smart(mesh.insert_edge(liah, mesh.next_halfedge_handle(nearestBisector)), &mesh);
+
+	const auto newface_halfege_opp = newface_halfege.opp();
+	const auto original_gap = newface_halfege.face();
+	const auto new_face = newface_halfege_opp.face();
+	
+	closestNeighbours.UpdateClosestNeighbours(original_gap);
+	closestNeighbours.UpdateClosestNeighbours(new_face);
+
+	gaps.push_back(original_gap);
+	gaps.push_back(new_face);
+
+	//mesh.data(mesh.opposite_face_handle(nearestBisector)).faceCreationMethod = FaceCreationMethod::EarCutting;
+ 	//mesh.data(liah.opp().face()).faceCreationMethod = FaceCreationMethod::EarCutting;
+
+	return true;
 }
 
