@@ -123,6 +123,12 @@ bool Implicit::Tessellation::ClosestNeighbours::IsBridge(OpenMesh::SmartHalfedge
 	return (*this)(closestNeigbour, toHalfedge.face()) == toHalfedge.to();
 }
 
+bool Implicit::Tessellation::ClosestNeighbours::IsBridge(OpenMesh::SmartHalfedgeHandle toHalfedge, OpenMesh::FaceHandle face) const
+{
+	auto closestNeigbour = (*this)(toHalfedge.to(), face);
+	return (*this)(closestNeigbour, face) == toHalfedge.to();
+}
+
 OpenMesh::VertexHandle Implicit::Tessellation::ClosestNeighbours::operator()(OpenMesh::HalfedgeHandle toHalfedge) const
 {
 	return (*this)(mesh.to_vertex_handle(toHalfedge), mesh.face_handle(toHalfedge));

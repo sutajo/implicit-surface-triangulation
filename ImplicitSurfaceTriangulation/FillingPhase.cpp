@@ -1,6 +1,7 @@
 #include "Plane.hpp"
 #include "FillingPhase.hpp"
 #include <glm/gtx/vector_angle.hpp>
+#include <list>
 
 Implicit::Tessellation::FillingPhase::FillingPhase(GlmPolyMesh& mesh, Object& object) : 
 	Phase(mesh, mesh),
@@ -133,6 +134,8 @@ bool Implicit::Tessellation::FillingPhase::SubdivisionOnBridges(OpenMesh::FaceHa
 {
 	bool meshChanged = false;
 
+	std::list<std::pair<OpenMesh::HalfedgeHandle, OpenMesh::HalfedgeHandle>> newEdges;
+
 	auto heh_start = OpenMesh::make_smart(mesh.halfedge_handle(gap), &mesh);
 	auto heh = heh_start;
 	auto hehBackwards = heh_start;
@@ -145,25 +148,31 @@ bool Implicit::Tessellation::FillingPhase::SubdivisionOnBridges(OpenMesh::FaceHa
 			while (hehBackwards.from() != closestNeighbour)
 				hehBackwards = hehBackwards.prev();
 
-			auto newface_halfege = OpenMesh::make_smart(mesh.insert_edge(heh, hehBackwards), &mesh);
-			closestNeighbours.UpdateClosestNeighbours(newface_halfege.face());
-			closestNeighbours.UpdateClosestNeighbours(newface_halfege.opp().face());
-
-			heh_start = newface_halfege.face().valence() > newface_halfege.opp().face().valence() ? newface_halfege : newface_halfege.opp();
-			heh = heh_start;
-			hehBackwards = heh_start;
-
-			gaps.push_back(heh_start.opp().face());
-
-			meshChanged = true;
+			newEdges.push_back({ heh, hehBackwards });
 		}
 
 		heh = heh.next();
 	} while (heh != heh_start);
 
-	if (meshChanged)
+	if (!newEdges.empty())
 	{
-		gaps.push_back(heh.face());
+		meshChanged = true;
+
+		std::list<OpenMesh::FaceHandle> facesToUpdate;
+
+		OpenMesh::HalfedgeHandle new_heh;
+		for (auto& [hehTo, hehFrom] : newEdges)
+		{
+			new_heh = mesh.insert_edge(hehTo, hehFrom);
+			facesToUpdate.push_back(mesh.face_handle(new_heh));
+		}
+		facesToUpdate.push_back(mesh.face_handle(new_heh));
+
+		for (auto& face : facesToUpdate)
+		{
+			closestNeighbours.UpdateClosestNeighbours(OpenMesh::make_smart(face, &mesh));
+			gaps.push_back(face);
+		}
 	}
 
 	return meshChanged;

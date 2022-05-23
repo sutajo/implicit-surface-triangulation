@@ -62,6 +62,7 @@ namespace Implicit
 			Is the vertex part of a bridge?
 			*/
 			bool IsBridge(OpenMesh::SmartHalfedgeHandle toHalfedge) const;
+			bool IsBridge(OpenMesh::SmartHalfedgeHandle toHalfedge, OpenMesh::FaceHandle face) const;
 
 			/*
 			Get closest neighbour
