@@ -7,10 +7,12 @@ class Phase
 protected:
 	InputMesh& inputMesh;
 	OutputMesh& outputMesh;
+	bool started = false;
 public:
 	Phase(InputMesh& inputMesh, OutputMesh& outputMesh) : inputMesh(inputMesh), outputMesh(outputMesh) {}
 	virtual ~Phase() {}
-	virtual void Start() {}
+	virtual void Start() { started = true; }
+	bool Started() const { return started; }
 	virtual void RunIterations(int iterations) = 0;
 	virtual void Run() { while (!Completed()) RunIterations(1); }
 	virtual bool Completed() const = 0;
@@ -55,7 +57,9 @@ public:
 		if (!first_phase.Completed())
 			first_phase.Run();
 
-		second_phase.Start();
+		if(!second_phase.Started())
+			second_phase.Start();
+
 		second_phase.Run();
 	}
 

@@ -227,6 +227,7 @@ bool GrowingPhase::applyEarCutting(const SmartFaceHandle& newFace)
 
 void GrowingPhase::Start()
 {
+    Phase::Start();
     generateSeedTriangle();
 }
 

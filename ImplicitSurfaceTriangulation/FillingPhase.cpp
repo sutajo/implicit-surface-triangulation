@@ -19,6 +19,8 @@ FillingPhase::FillingPhase(GlmPolyMesh& mesh, Object& object) :
 
 void FillingPhase::Start()
 {
+	Phase::Start();
+
 	SmartHalfedgeHandle heh_start = FindBoundaryHalfEdge(mesh);
 	vector<VertexHandle> gapVertices;
 	auto heh = heh_start;

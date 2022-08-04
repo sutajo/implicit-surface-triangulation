@@ -480,6 +480,7 @@ void SurfaceTriangulationDemo::DrawUI()
 					if (Button("Run tessellation until completion"))
 					{
 						tessellator->Run();
+						UpdateMesh();
 					}
 				}
 				catch (const exception& e)
