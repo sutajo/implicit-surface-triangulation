@@ -3,7 +3,12 @@
 #include <glm/gtx/vector_angle.hpp>
 #include <list>
 
-Implicit::Tessellation::FillingPhase::FillingPhase(GlmPolyMesh& mesh, Object& object) : 
+using namespace std;
+using namespace Implicit::Tessellation;
+using namespace OpenMesh;
+using namespace glm;
+
+FillingPhase::FillingPhase(GlmPolyMesh& mesh, Object& object) : 
 	Phase(mesh, mesh),
 	mesh(mesh),
 	object(object),
@@ -12,15 +17,15 @@ Implicit::Tessellation::FillingPhase::FillingPhase(GlmPolyMesh& mesh, Object& ob
 	mesh.request_face_status();
 }
 
-void Implicit::Tessellation::FillingPhase::Start()
+void FillingPhase::Start()
 {
-	OpenMesh::SmartHalfedgeHandle heh_start = FindBoundaryHalfEdge(mesh);
-	std::vector<OpenMesh::VertexHandle> gapVertices;
+	SmartHalfedgeHandle heh_start = FindBoundaryHalfEdge(mesh);
+	vector<VertexHandle> gapVertices;
 	auto heh = heh_start;
 	do
 	{
 		auto heh_to = heh.to();
-		closestNeighbours.AddVertex(heh_to);
+		closestNeighbours.AddVertex(heh_to); 
 		gapVertices.push_back(heh_to);
 		heh = heh.next();
 	} while (heh != heh_start);
@@ -29,14 +34,14 @@ void Implicit::Tessellation::FillingPhase::Start()
 
 	auto initial_gap = mesh.add_face(gapVertices);
 	if (!initial_gap.is_valid())
-		throw std::runtime_error("Can't create initial gap");
+		throw runtime_error("Can't create initial gap");
 
 	closestNeighbours.UpdateClosestNeighbours(initial_gap);
 
 	gaps.push_back(initial_gap);
 }
 
-void Implicit::Tessellation::FillingPhase::RunIterations(int iterations)
+void FillingPhase::RunIterations(int iterations)
 {
 	for (int i = 0; i < iterations && !Completed(); ++i)
 	{
@@ -53,17 +58,17 @@ void Implicit::Tessellation::FillingPhase::RunIterations(int iterations)
 	}
 }
 
-bool Implicit::Tessellation::FillingPhase::Completed() const
+bool FillingPhase::Completed() const
 {
 	return gaps.empty();
 }
 
-const Implicit::Tessellation::ClosestNeighbours& Implicit::Tessellation::FillingPhase::GetClosestNeighbours() const
+const ClosestNeighbours& FillingPhase::GetClosestNeighbours() const
 {
 	return closestNeighbours;
 }
 
-bool Implicit::Tessellation::FillingPhase::SmallPolygonFilling(OpenMesh::FaceHandle gap)
+bool FillingPhase::SmallPolygonFilling(FaceHandle gap)
 {
 	const auto valence = mesh.valence(gap);
 	if (valence == 3)
@@ -85,28 +90,28 @@ bool Implicit::Tessellation::FillingPhase::SmallPolygonFilling(OpenMesh::FaceHan
 
 	if (allVerticesConvex)
 	{
-		auto heh = OpenMesh::make_smart(mesh.halfedge_handle(gap), &mesh);
+		auto heh = make_smart(mesh.halfedge_handle(gap), &mesh);
 		auto p1 = mesh.point(heh.from());
 		auto p2 = mesh.point(heh.to());
 		auto heh_nn = heh.next().next();
 		auto p3 = mesh.point(heh_nn.from());
 		auto p4 = mesh.point(heh_nn.to());
 
-		auto side1 = glm::distance(p1, p2);
-		auto side2 = glm::distance(p2, p3);
-		auto side3 = glm::distance(p3, p4);
-		auto side4 = glm::distance(p4, p1);
+		auto side1 = distance(p1, p2);
+		auto side2 = distance(p2, p3);
+		auto side3 = distance(p3, p4);
+		auto side4 = distance(p4, p1);
 
-		const double shortestSide = std::min({ side1, side2, side3, side4 });
-		const double longestSide = std::max({ side1, side2, side3, side4 });
+		const double shortestSide = min({ side1, side2, side3, side4 });
+		const double longestSide = max({ side1, side2, side3, side4 });
 
-		const double diagonal1 = glm::distance(p1, p3);
-		const double diagonal2 = glm::distance(p2, p4);
+		const double diagonal1 = distance(p1, p3);
+		const double diagonal2 = distance(p2, p4);
 
-		const double quality1 = std::min({ shortestSide, diagonal1 }) / std::max({ longestSide, diagonal1 });
-		const double quality2 = std::min({ shortestSide, diagonal2 }) / std::max({ longestSide, diagonal2 });
+		const double quality1 = min({ shortestSide, diagonal1 }) / std::max({ longestSide, diagonal1 });
+		const double quality2 = min({ shortestSide, diagonal2 }) / std::max({ longestSide, diagonal2 });
 
-		OpenMesh::HalfedgeHandle new_heh;
+		HalfedgeHandle new_heh;
 		if (quality1 > quality2)
 		{
 			new_heh = mesh.insert_edge(heh.prev(), heh_nn);
@@ -130,13 +135,13 @@ bool Implicit::Tessellation::FillingPhase::SmallPolygonFilling(OpenMesh::FaceHan
 	return true;
 }
 
-bool Implicit::Tessellation::FillingPhase::SubdivisionOnBridges(OpenMesh::FaceHandle gap)
+bool FillingPhase::SubdivisionOnBridges(FaceHandle gap)
 {
 	bool meshChanged = false;
 
-	std::list<std::pair<OpenMesh::HalfedgeHandle, OpenMesh::HalfedgeHandle>> newEdges;
+	list<pair<HalfedgeHandle, HalfedgeHandle>> newEdges;
 
-	auto heh_start = OpenMesh::make_smart(mesh.halfedge_handle(gap), &mesh);
+	auto heh_start = make_smart(mesh.halfedge_handle(gap), &mesh);
 	auto heh = heh_start;
 	auto hehBackwards = heh_start;
 	do
@@ -158,9 +163,9 @@ bool Implicit::Tessellation::FillingPhase::SubdivisionOnBridges(OpenMesh::FaceHa
 	{
 		meshChanged = true;
 
-		std::list<OpenMesh::FaceHandle> facesToUpdate;
+		list<FaceHandle> facesToUpdate;
 
-		OpenMesh::HalfedgeHandle new_heh;
+		HalfedgeHandle new_heh;
 		for (auto& [hehTo, hehFrom] : newEdges)
 		{
 			new_heh = mesh.insert_edge(hehTo, hehFrom);
@@ -170,7 +175,7 @@ bool Implicit::Tessellation::FillingPhase::SubdivisionOnBridges(OpenMesh::FaceHa
 
 		for (auto& face : facesToUpdate)
 		{
-			closestNeighbours.UpdateClosestNeighbours(OpenMesh::make_smart(face, &mesh));
+			closestNeighbours.UpdateClosestNeighbours(make_smart(face, &mesh));
 			gaps.push_back(face);
 		}
 	}
@@ -178,15 +183,15 @@ bool Implicit::Tessellation::FillingPhase::SubdivisionOnBridges(OpenMesh::FaceHa
 	return meshChanged;
 }
 
-bool Implicit::Tessellation::FillingPhase::XFilling(OpenMesh::FaceHandle gap)
+bool FillingPhase::XFilling(FaceHandle gap)
 {
-	auto sgap = OpenMesh::make_smart(gap, &mesh);
+	auto sgap = make_smart(gap, &mesh);
 	if (sgap.valence() < 4)
 		return false;
 
 	bool meshChanged = false;
 
-	OpenMesh::SmartHalfedgeHandle heh_start = OpenMesh::make_smart(mesh.halfedge_handle(gap), &mesh);
+	SmartHalfedgeHandle heh_start = make_smart(mesh.halfedge_handle(gap), &mesh);
 	auto heh = heh_start;
 	do
 	{
@@ -224,7 +229,7 @@ bool Implicit::Tessellation::FillingPhase::XFilling(OpenMesh::FaceHandle gap)
 				auto d3 = glm::distance(mesh.point(v3), mesh.point(v4));
 				auto d = glm::distance(mesh.point(v1), mesh.point(v4));
 
-				const auto newface_halfege = OpenMesh::make_smart(mesh.insert_edge(heh.prev(), heh_next_next.next()), &mesh);
+				const auto newface_halfege = make_smart(mesh.insert_edge(heh.prev(), heh_next_next.next()), &mesh);
 				const auto newface_halfege_opp = newface_halfege.opp();
 				const auto original_gap = newface_halfege.face();
 				const auto xfilled_face = newface_halfege_opp.face();
@@ -255,7 +260,7 @@ bool Implicit::Tessellation::FillingPhase::XFilling(OpenMesh::FaceHandle gap)
 					assert(to_mv_prev.from() == v3);
 
 					// Add 3 new faces
-					to_mv = OpenMesh::make_smart(mesh.insert_edge(to_mv, to_mv_prev), &mesh).opp();
+					to_mv = make_smart(mesh.insert_edge(to_mv, to_mv_prev), &mesh).opp();
 					to_mv_prev = to_mv.prev();
 					mesh.data(to_mv.opp().face()).faceCreationMethod = FaceCreationMethod::XFilling;
 
@@ -293,12 +298,12 @@ bool Implicit::Tessellation::FillingPhase::XFilling(OpenMesh::FaceHandle gap)
 	return meshChanged;
 }
 
-bool Implicit::Tessellation::FillingPhase::EarFilling(OpenMesh::FaceHandle gap, bool relaxed)
+bool FillingPhase::EarFilling(FaceHandle gap, bool relaxed)
 {
-	auto sgap = OpenMesh::make_smart(gap, &mesh);
+	auto sgap = make_smart(gap, &mesh);
 	bool meshChanged = false;
 
-	OpenMesh::SmartHalfedgeHandle heh_start = OpenMesh::make_smart(mesh.halfedge_handle(gap), &mesh);
+	SmartHalfedgeHandle heh_start = make_smart(mesh.halfedge_handle(gap), &mesh);
 	auto heh = heh_start;
 	do
 	{
@@ -333,11 +338,11 @@ bool Implicit::Tessellation::FillingPhase::EarFilling(OpenMesh::FaceHandle gap, 
 
 				closestNeighbours.RemoveVertex(v2);
 
-				auto d1 = glm::distance(mesh.point(v1), mesh.point(v2));
-				auto d2 = glm::distance(mesh.point(v2), mesh.point(v3));
-				auto d = glm::distance(mesh.point(v1), mesh.point(v3));
+				auto d1 = distance(mesh.point(v1), mesh.point(v2));
+				auto d2 = distance(mesh.point(v2), mesh.point(v3));
+				auto d = distance(mesh.point(v1), mesh.point(v3));
 
-				const auto newface_halfege = OpenMesh::make_smart(mesh.insert_edge(heh.prev(), heh_next_next), &mesh);
+				const auto newface_halfege = make_smart(mesh.insert_edge(heh.prev(), heh_next_next), &mesh);
 				const auto original_gap = newface_halfege.face();
 				const auto earfilled_face = newface_halfege.opp().face();
 
@@ -349,7 +354,7 @@ bool Implicit::Tessellation::FillingPhase::EarFilling(OpenMesh::FaceHandle gap, 
 
 				closestNeighbours.MoveFaceNeighbours(earfilled_face, original_gap);
 
-				if (d > 1.5 * std::max({ d1, d2 }))
+				if (d > 1.5 * max({ d1, d2 }))
 				{
 					const auto midpoint = (mesh.point(v1) + mesh.point(v3)) / 2.;
 					const auto mv_handle = mesh.add_vertex(midpoint);
@@ -382,7 +387,7 @@ bool Implicit::Tessellation::FillingPhase::EarFilling(OpenMesh::FaceHandle gap, 
 
 bool Implicit::Tessellation::FillingPhase::ConvexPolygonFilling(OpenMesh::FaceHandle gap)
 {
-	auto sgap = OpenMesh::make_smart(gap, &mesh);
+	auto sgap = make_smart(gap, &mesh);
 
 	for (auto heh : sgap.halfedges())
 		if (!closestNeighbours.IsConvex(heh))
@@ -403,15 +408,15 @@ bool Implicit::Tessellation::FillingPhase::ConcaveVertexBisection(OpenMesh::Face
 	{
 		const auto pointNormal = object.Normal(mesh.point(halfedge.to()));
 		const auto e1 = mesh.calc_edge_vector(halfedge);
-		auto angle = acos(glm::dot(glm::normalize(e1), glm::normalize(e2)));
+		auto angle = acos(dot(normalize(e1), normalize(e2)));
 		const auto cross = glm::cross(e1, e2);
-		if (glm::dot(pointNormal, cross) < 0) { // Or > 0
+		if (dot(pointNormal, cross) < 0) { // Or > 0
 			angle += M_PI;
 		}
 		return angle;
 	};
 
-	std::cout << "ConcaveVertexBisection: " << gap.idx() << std::endl;
+	cout << "ConcaveVertexBisection: " << gap.idx() << std::endl;
 
 	auto sgap = OpenMesh::make_smart(gap, &mesh);
 
@@ -428,14 +433,14 @@ bool Implicit::Tessellation::FillingPhase::ConcaveVertexBisection(OpenMesh::Face
 		}
 	}
 
-	std::cout << "Interior angle: " << glm::degrees(lia) << std::endl;
+	cout << "Interior angle: " << degrees(lia) << endl;
 
 	const auto liahP = mesh.point(liah.to());
 	auto liahN = object.Normal(liahP);
 	const auto e1 = mesh.calc_edge_vector(liah);
 
-	double nearestBisection = std::numeric_limits<double>::max();
-	OpenMesh::HalfedgeHandle nearestBisector;
+	double nearestBisection = numeric_limits<double>::max();
+	HalfedgeHandle nearestBisector;
 	auto liah_prev = liah.prev();
 	for (auto heh : sgap.halfedges())
 	{
@@ -455,7 +460,7 @@ bool Implicit::Tessellation::FillingPhase::ConcaveVertexBisection(OpenMesh::Face
 	if (!nearestBisector.is_valid())
 		throw std::runtime_error("Impossible");
 
-	std::cout << "Closest bisector: " << glm::degrees(nearestBisection) << std::endl;
+	cout << "Closest bisector: " << degrees(nearestBisection) << endl;
 
 	const auto newface_halfege = OpenMesh::make_smart(mesh.insert_edge(liah, mesh.next_halfedge_handle(nearestBisector)), &mesh);
 

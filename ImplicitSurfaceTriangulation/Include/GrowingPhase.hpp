@@ -68,7 +68,7 @@ namespace Implicit
 			*/
 			double rho = 0.2;
 
-			/**
+			/*
 			kdTree needs a rebuild before next search
 			*/
 			bool kdTreeIsDirty = false;
@@ -84,7 +84,7 @@ namespace Implicit
 			*/
 			void generateSeedTriangle();
 
-			/**
+			/*
 			Compute radius of curvature at a given point
 			*/
 			double getRoc(const glm::dvec3& point) const;

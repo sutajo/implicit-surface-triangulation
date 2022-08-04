@@ -1,6 +1,8 @@
 ﻿#include "KarkanisStewartTessellator.hpp"
 
-Implicit::Tessellation::KarkanisStewartTessellator::KarkanisStewartTessellator(Object& object): 
+using namespace Implicit::Tessellation;
+
+KarkanisStewartTessellator::KarkanisStewartTessellator(Object& object): 
 	KarkanisStewartSubPhases(mesh, object),
 	PhaseChain(growingPhase, fillingPhase)
 {
