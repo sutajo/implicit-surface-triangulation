@@ -13,7 +13,12 @@
 #include <glm/gtx/vector_angle.hpp>
 #include <format>
 
+using namespace ImGui;
+using namespace std;
 using namespace std::chrono;
+using namespace glm;
+using namespace OpenMesh;
+using namespace Implicit;
 
 SurfaceTriangulationDemo* instance = nullptr;
 
@@ -34,8 +39,8 @@ SurfaceTriangulationDemo::SurfaceTriangulationDemo(int argc, char* argv[]) : glu
 
 	// static Implicit::Sphere s(metaballFunction);
 
-	implicitObjects.push_back({ "Sphere", std::make_unique<Implicit::Sphere>()  });
-	implicitObjects.push_back({ "Torus" , std::make_unique<Implicit::Torus>()   }) ;
+	implicitObjects.push_back({ "Sphere", std::make_unique<Sphere>()  });
+	implicitObjects.push_back({ "Torus" , std::make_unique<Torus>()   }) ;
 	// implicitObjects.push_back({ "Translate" , std::make_unique<Implicit::Scale>(&s, glm::dvec3(0.5, 0.5, 0.5)) });
 	
 	/*
@@ -76,7 +81,7 @@ int SurfaceTriangulationDemo::Run()
 
 void SurfaceTriangulationDemo::onMotion(int x, int y)
 {
-	ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO& io = GetIO();
 	ImGui_ImplGLUT_MotionFunc(x, y);
 
 	if (!io.WantCaptureMouse)
@@ -85,7 +90,11 @@ void SurfaceTriangulationDemo::onMotion(int x, int y)
 		if (instance->input.rightButtonHeld)
 		{
 			// Kamera távolság állítás
-			instance->camera.SetView(instance->camera.GetEye() - dy * io.DeltaTime * instance->camera.GetFw(), instance->camera.GetAt(), instance->camera.GetUp());
+			instance->camera.SetView(
+				instance->camera.GetEye() - dy * io.DeltaTime * instance->camera.GetFw(),
+				instance->camera.GetAt(),
+				instance->camera.GetUp()
+			);
 		}
 		else
 		{
@@ -119,7 +128,7 @@ void SurfaceTriangulationDemo::onMouse(int button, int state, int x, int y)
 
 void SurfaceTriangulationDemo::onKeyboardDown(unsigned char key, int pX, int pY)
 {
-	ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO& io = GetIO();
 	ImGui_ImplGLUT_KeyboardFunc(key, pX, pY);
 	if (!io.WantCaptureKeyboard && instance->algorithmSettings.freeCamera)
 	{
@@ -154,9 +163,9 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 {
 	const float GRID_STEP = 64.0f;
 	
-	if (!ImGui::Begin("Face view", p_open, ImGuiWindowFlags_AlwaysAutoResize))
+	if (!Begin("Face view", p_open, ImGuiWindowFlags_AlwaysAutoResize))
 	{
-		ImGui::End();
+		End();
 		return;
 	}
 	
@@ -165,43 +174,43 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 	static bool adding_line = false;
 
 
-	ImGui::Text("Clicked face id: %d", clickedFace.idx());
+	Text("Clicked face id: %d", clickedFace.idx());
 	auto& glmMesh = tessellator->mesh;
-	ImGui::Text("Face creation method: %d",  glmMesh.data(clickedFace).faceCreationMethod);
+	Text("Face creation method: %d",  glmMesh.data(clickedFace).faceCreationMethod);
 
 	auto vertices = clickedFace.vertices().to_array<3>();
 	auto triangle = Triangle{ glmMesh.point(vertices[0]), glmMesh.point(vertices[1]), glmMesh.point(vertices[2]) };
 
-	ImGui::Text("A (Idx %d): (%3f, %3f, %3f)\nB (Idx %d): (%3f, %3f, %3f)\nC (Idx %d): (%3f, %3f, %3f)",
+	Text("A (Idx %d): (%3f, %3f, %3f)\nB (Idx %d): (%3f, %3f, %3f)\nC (Idx %d): (%3f, %3f, %3f)",
 		vertices[0].idx(), triangle.a.x, triangle.a.y, triangle.a.z,
 		vertices[1].idx(), triangle.b.x, triangle.b.y, triangle.b.z,
 		vertices[2].idx(), triangle.c.x, triangle.c.y, triangle.c.z
 	);
 
-	ImGui::Text("Mouse Left: drag to measure distance,\nMouse Right: drag to scroll, click for context menu.");
+	Text("Mouse Left: drag to measure distance,\nMouse Right: drag to scroll, click for context menu.");
 
 	// Using InvisibleButton() as a convenience 1) it will advance the layout cursor and 2) allows us to use IsItemHovered()/IsItemActive()
-	ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();      // ImDrawList API uses screen coordinates!
+	ImVec2 canvas_p0 = GetCursorScreenPos();      // ImDrawList API uses screen coordinates!
 	ImVec2 canvas_sz = ImVec2(GRID_STEP*10, GRID_STEP*7);   // Resize canvas to what's available
 	if (canvas_sz.x < 50.0f) canvas_sz.x = 50.0f;
 	if (canvas_sz.y < 50.0f) canvas_sz.y = 50.0f;
 	ImVec2 canvas_p1 = ImVec2(canvas_p0.x + canvas_sz.x, canvas_p0.y + canvas_sz.y);
 
 	// Draw border and background color
-	ImGuiIO& io = ImGui::GetIO();
-	ImDrawList* draw_list = ImGui::GetWindowDrawList();
+	ImGuiIO& io = GetIO();
+	ImDrawList* draw_list = GetWindowDrawList();
 	draw_list->AddRectFilled(canvas_p0, canvas_p1, IM_COL32(50, 50, 50, 255));
 	draw_list->AddRect(canvas_p0, canvas_p1, IM_COL32(255, 255, 255, 255));
 
 	// This will catch our interactions
-	ImGui::InvisibleButton("canvas", canvas_sz, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
-	const bool is_hovered = ImGui::IsItemHovered(); // Hovered
-	const bool is_active = ImGui::IsItemActive();   // Held
+	InvisibleButton("canvas", canvas_sz, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
+	const bool is_hovered = IsItemHovered(); // Hovered
+	const bool is_active = IsItemActive();   // Held
 	const ImVec2 origin(canvas_p0.x + scrolling.x, canvas_p0.y + scrolling.y); // Lock scrolled origin
 	const ImVec2 mouse_pos_in_canvas(io.MousePos.x - origin.x, io.MousePos.y - origin.y);
 
 	// Add first and second point
-	if (is_hovered && !adding_line && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+	if (is_hovered && !adding_line && IsMouseClicked(ImGuiMouseButton_Left))
 	{
 		points.push_back(mouse_pos_in_canvas);
 		points.push_back(mouse_pos_in_canvas);
@@ -219,24 +228,24 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 
 	// Pan (we use a zero mouse threshold when there's no context menu)
 	// You may decide to make that threshold dynamic based on whether the mouse is hovering something etc.
-	if (is_active && ImGui::IsMouseDragging(ImGuiMouseButton_Right))
+	if (is_active && IsMouseDragging(ImGuiMouseButton_Right))
 	{
 		scrolling.x += io.MouseDelta.x;
 		scrolling.y += io.MouseDelta.y;
 	}
 
 	// Context menu (under default mouse threshold)
-	ImVec2 drag_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Right);
+	ImVec2 drag_delta = GetMouseDragDelta(ImGuiMouseButton_Right);
 	if (drag_delta.x == 0.0f && drag_delta.y == 0.0f)
-		ImGui::OpenPopupOnItemClick("context", ImGuiPopupFlags_MouseButtonRight);
-	if (ImGui::BeginPopup("context"))
+		OpenPopupOnItemClick("context", ImGuiPopupFlags_MouseButtonRight);
+	if (BeginPopup("context"))
 	{
 		if (adding_line)
 			points.resize(points.size() - 2);
 		adding_line = false;
-		if (ImGui::MenuItem("Remove one", NULL, false, points.Size > 0)) { points.resize(points.size() - 2); }
-		if (ImGui::MenuItem("Remove all", NULL, false, points.Size > 0)) { points.clear(); }
-		ImGui::EndPopup();
+		if (MenuItem("Remove one", NULL, false, points.Size > 0)) { points.resize(points.size() - 2); }
+		if (MenuItem("Remove all", NULL, false, points.Size > 0)) { points.clear(); }
+		EndPopup();
 	}
 
 	// Draw grid + all lines in the canvas
@@ -255,19 +264,19 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 	zoom = GRID_STEP * 4.0 / longestSide;
 	auto sides = triangle.GetSideLengths();
 
-	const glm::dvec2 axis1 = glm::dvec2(1.0, 0.0);
-	const double angle = glm::angle(glm::normalize(triangle.b - triangle.a), glm::normalize(triangle.c - triangle.a));
-	const glm::dvec2 axis2 = glm::normalize(glm::rotate(axis1, angle));
+	const dvec2 axis1 = dvec2(1.0, 0.0);
+	const double angle = glm::angle(normalize(triangle.b - triangle.a), normalize(triangle.c - triangle.a));
+	const dvec2 axis2 = normalize(glm::rotate(axis1, angle));
 
-	const glm::dvec2 mid = (zoom * std::get<0>(sides) * axis1 + zoom * std::get<2>(sides) * axis2) / 2.;
+	const dvec2 mid = (zoom * get<0>(sides) * axis1 + zoom * get<2>(sides) * axis2) / 2.;
 	
 	// Triangle
 	const auto faceColor = mesh.GetColorFromFaceIndex(clickedFace.idx());
 	auto canvas_center = ImVec2(origin.x + canvas_sz.x / 2. - mid.x / 2., origin.y + canvas_sz.y / 2. - mid.y / 2.);
 
 	const ImVec2 gridTriangleA = ImVec2(canvas_center.x, canvas_center.y);
-	const ImVec2 gridTriangleB = ImVec2(canvas_center.x + zoom * std::get<0>(sides) * axis1.x, canvas_center.y + zoom * std::get<0>(sides) * axis1.y);
-	const ImVec2 gridTriangleC = ImVec2(canvas_center.x + zoom * std::get<2>(sides) * axis2.x, canvas_center.y + zoom * std::get<2>(sides) * axis2.y);
+	const ImVec2 gridTriangleB = ImVec2(canvas_center.x + zoom * get<0>(sides) * axis1.x, canvas_center.y + zoom * get<0>(sides) * axis1.y);
+	const ImVec2 gridTriangleC = ImVec2(canvas_center.x + zoom * get<2>(sides) * axis2.x, canvas_center.y + zoom * get<2>(sides) * axis2.y);
 	draw_list->AddTriangleFilled(
 		gridTriangleA,
 		gridTriangleB,
@@ -275,20 +284,20 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 		ImColor(faceColor.r, faceColor.g, faceColor.b)
 	);
 
-	auto find_edge = [&](OpenMesh::VertexHandle v1, OpenMesh::VertexHandle v2)
+	auto find_edge = [&](VertexHandle v1, VertexHandle v2)
 	{
-		OpenMesh::HalfedgeHandle heh = glmMesh.find_halfedge(v1, v2);
+		HalfedgeHandle heh = glmMesh.find_halfedge(v1, v2);
 		if (heh.is_valid()) {
 			return glmMesh.edge_handle(heh);
 		}
 		else {
-			return OpenMesh::EdgeHandle();
+			return EdgeHandle();
 		}
 	};
 
-	auto find_boundary_halfedge = [&](OpenMesh::VertexHandle v1, OpenMesh::VertexHandle v2)
+	auto find_boundary_halfedge = [&](VertexHandle v1, VertexHandle v2)
 	{
-		OpenMesh::HalfedgeHandle heh = glmMesh.find_halfedge(v1, v2);
+		HalfedgeHandle heh = glmMesh.find_halfedge(v1, v2);
 		if (heh.is_valid()) {
 			if (glmMesh.is_boundary(heh))
 				return heh;
@@ -296,7 +305,7 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 				return glmMesh.opposite_halfedge_handle(heh);
 		}
 		else {
-			return OpenMesh::HalfedgeHandle();
+			return HalfedgeHandle();
 		}
 	};
 
@@ -308,23 +317,23 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 	draw_list->AddLine(gridTriangleB, gridTriangleC, glmMesh.is_boundary(find_edge(vertices[1], vertices[2])) ? boundaryColor : innerColor, 3.0f);
 	draw_list->AddLine(gridTriangleA, gridTriangleC, glmMesh.is_boundary(find_edge(vertices[0], vertices[2])) ? boundaryColor : innerColor, 3.0f);
 
-	auto fontSize = ImGui::GetFontSize() * 1.5f;
+	auto fontSize = GetFontSize() * 1.5f;
 
 	// Triangle side lengths
-	std::string distStr = std::format("Idx: {}, Len: {:.4f}", find_boundary_halfedge(vertices[0], vertices[1]).idx(), std::get<0>(sides));
-	auto size = ImGui::GetFont()->CalcTextSizeA(fontSize, FLT_MAX, FLT_MAX, distStr.c_str());
-	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2((gridTriangleA.x + gridTriangleB.x) / 2.f - size.x / 2.f, (gridTriangleA.y + gridTriangleB.y) / 2.f - size.y * 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
-	distStr = std::format("Idx: {}, Len: {:.4f}", find_boundary_halfedge(vertices[1], vertices[2]).idx(), std::get<1>(sides));
-	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2((gridTriangleB.x + gridTriangleC.x) / 2.f + 15.f, (gridTriangleB.y + gridTriangleC.y) / 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
-	size = ImGui::GetFont()->CalcTextSizeA(fontSize, FLT_MAX, FLT_MAX, distStr.c_str());
-	distStr = std::format("Idx: {}, Len: {:.4f}", find_boundary_halfedge(vertices[0], vertices[2]).idx(), std::get<2>(sides));
-	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2((gridTriangleA.x + gridTriangleC.x) / 2.f - size.x - 10.f, (gridTriangleA.y + gridTriangleC.y) / 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
+	string distStr = format("Idx: {}, Len: {:.4f}", find_boundary_halfedge(vertices[0], vertices[1]).idx(), get<0>(sides));
+	auto size = GetFont()->CalcTextSizeA(fontSize, FLT_MAX, FLT_MAX, distStr.c_str());
+	draw_list->AddText(GetFont(), fontSize, ImVec2((gridTriangleA.x + gridTriangleB.x) / 2.f - size.x / 2.f, (gridTriangleA.y + gridTriangleB.y) / 2.f - size.y * 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
+	distStr = format("Idx: {}, Len: {:.4f}", find_boundary_halfedge(vertices[1], vertices[2]).idx(), get<1>(sides));
+	draw_list->AddText(GetFont(), fontSize, ImVec2((gridTriangleB.x + gridTriangleC.x) / 2.f + 15.f, (gridTriangleB.y + gridTriangleC.y) / 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
+	size = GetFont()->CalcTextSizeA(fontSize, FLT_MAX, FLT_MAX, distStr.c_str());
+	distStr = format("Idx: {}, Len: {:.4f}", find_boundary_halfedge(vertices[0], vertices[2]).idx(), get<2>(sides));
+	draw_list->AddText(GetFont(), fontSize, ImVec2((gridTriangleA.x + gridTriangleC.x) / 2.f - size.x - 10.f, (gridTriangleA.y + gridTriangleC.y) / 2.f), IM_COL32(235, 168, 52, 255), distStr.c_str());
 
-	distStr = std::format("{}", vertices[0].idx());
-	size = ImGui::GetFont()->CalcTextSizeA(fontSize, FLT_MAX, FLT_MAX, distStr.c_str());
-	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2(gridTriangleA.x - size.x - 10.f, gridTriangleA.y - size.y / 2.f), IM_COL32(59, 222, 255, 255), distStr.c_str());
-	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2(gridTriangleB.x + 10.0f , gridTriangleB.y - size.y / 2.f), IM_COL32(59, 222, 255, 255), std::format("{}", vertices[1].idx()).c_str());
-	draw_list->AddText(ImGui::GetFont(), fontSize, ImVec2(gridTriangleC.x - size.x / 2.f , gridTriangleC.y + 10.0f), IM_COL32(59, 222, 255, 255), std::format("{}", vertices[2].idx()).c_str());
+	distStr = format("{}", vertices[0].idx());
+	size = GetFont()->CalcTextSizeA(fontSize, FLT_MAX, FLT_MAX, distStr.c_str());
+	draw_list->AddText(GetFont(), fontSize, ImVec2(gridTriangleA.x - size.x - 10.f, gridTriangleA.y - size.y / 2.f), IM_COL32(59, 222, 255, 255), distStr.c_str());
+	draw_list->AddText(GetFont(), fontSize, ImVec2(gridTriangleB.x + 10.0f , gridTriangleB.y - size.y / 2.f), IM_COL32(59, 222, 255, 255), std::format("{}", vertices[1].idx()).c_str());
+	draw_list->AddText(GetFont(), fontSize, ImVec2(gridTriangleC.x - size.x / 2.f , gridTriangleC.y + 10.0f), IM_COL32(59, 222, 255, 255), std::format("{}", vertices[2].idx()).c_str());
 
 	// Lines
 	for (int n = 0; n < points.Size; n += 2)
@@ -333,18 +342,16 @@ void SurfaceTriangulationDemo::ShowClickedFace(bool* p_open)
 		const float distanceX = points[n].x - points[n + 1].x;
 		const float distanceY = points[n].y - points[n + 1].y;
 		const float distance = sqrt(distanceX * distanceX + distanceY * distanceY) / zoom;
-		draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize()*1.8f, ImVec2(origin.x + (points[n].x + points[n + 1].x) / 2.f, origin.y + (points[n].y + points[n + 1].y) / 2.f), IM_COL32(235, 64, 52, 255), std::to_string(distance).c_str()); 
+		draw_list->AddText(GetFont(), GetFontSize()*1.8f, ImVec2(origin.x + (points[n].x + points[n + 1].x) / 2.f, origin.y + (points[n].y + points[n + 1].y) / 2.f), IM_COL32(235, 64, 52, 255), to_string(distance).c_str()); 
 	}
 
 	draw_list->PopClipRect();
 	
-	ImGui::End();
+	End();
 }
 
 void SurfaceTriangulationDemo::DrawUI()
 {
-	using namespace ImGui;
-
 	ImGuiIO& io = GetIO();
 	BeginGroup();
 
@@ -418,7 +425,7 @@ void SurfaceTriangulationDemo::DrawUI()
 				}
 				PopItemWidth();
 
-				static std::string comboOptions;
+				static string comboOptions;
 				if (comboOptions.empty())
 				{
 					for (auto& implicitObj : implicitObjects)
@@ -475,7 +482,7 @@ void SurfaceTriangulationDemo::DrawUI()
 						tessellator->Run();
 					}
 				}
-				catch (const std::exception& e)
+				catch (const exception& e)
 				{
 					log.AddLog("An exception occured:\n%s\n\n", e.what());
 				}
@@ -483,8 +490,8 @@ void SurfaceTriangulationDemo::DrawUI()
 		}
 	End();
 
-	ImGui::SetNextWindowPos(ImVec2(0.0f, io.DisplaySize.y), 0, ImVec2(0.0f, 1.0f));
-	ImGui::SetNextWindowSize(ImVec2(600, 400), ImGuiCond_FirstUseEver);
+	SetNextWindowPos(ImVec2(0.0f, io.DisplaySize.y), 0, ImVec2(0.0f, 1.0f));
+	SetNextWindowSize(ImVec2(600, 400), ImGuiCond_FirstUseEver);
 	log.Draw("Tessellation log");
 
 	EndGroup();
@@ -496,7 +503,7 @@ void SurfaceTriangulationDemo::DrawMesh(Mesh& mesh, bool drawLines, bool drawFil
 	instance->meshShader.enable();
 	instance->meshShader.setUniformMat4("MVP", instance->camera.GetViewProj() * world);
 	instance->meshShader.setUniformMat4("world", world);
-	instance->meshShader.setUniformMat4("worldIT", glm::inverse(glm::transpose(world)));
+	instance->meshShader.setUniformMat4("worldIT", inverse(transpose(world)));
 	if (drawFill || drawLines)
 	{
 		instance->meshShader.setUniform1i("uUseDiffuseShading", false);
@@ -522,7 +529,7 @@ void SurfaceTriangulationDemo::DrawMesh(Mesh& mesh, bool drawLines, bool drawFil
 
 void SurfaceTriangulationDemo::SetLineWidth()
 {
-	glLineWidth(std::max(7.0f / glm::distance(camera.GetEye(), camera.GetAt()), 1.0f));
+	glLineWidth(std::max(7.0f / distance(camera.GetEye(), camera.GetAt()), 1.0f));
 }
 
 void SurfaceTriangulationDemo::UpdateMesh()
@@ -537,7 +544,7 @@ void SurfaceTriangulationDemo::UpdateMesh()
 	}
 }
 
-void SurfaceTriangulationDemo::SetTessellatedObect(Implicit::Object &object)
+void SurfaceTriangulationDemo::SetTessellatedObect(Object &object)
 {
 	tessellator.emplace(object);
 	tessellator->growingPhase.SetRho(algorithmSettings.rho);
@@ -554,7 +561,7 @@ void SurfaceTriangulationDemo::SetTessellatedObect(Implicit::Object &object)
 	bb.Resize(w / 2.0f, h / 2.0f, d / 2.0f);
 	UpdateMesh();
 	log.Clear();
-	clickedFace = OpenMesh::SmartFaceHandle();
+	clickedFace = SmartFaceHandle();
 }
 
 Implicit::Object& SurfaceTriangulationDemo::GetSelectedObject()
@@ -582,7 +589,7 @@ void SurfaceTriangulationDemo::RunPendingIterations()
 
 }
 
-OpenMesh::SmartFaceHandle SurfaceTriangulationDemo::QueryClickedFace()
+SmartFaceHandle SurfaceTriangulationDemo::QueryClickedFace()
 {
 	glFlush();
 	glFinish();
@@ -594,7 +601,7 @@ OpenMesh::SmartFaceHandle SurfaceTriangulationDemo::QueryClickedFace()
 	const GLint y = glutGet(GLUT_WINDOW_HEIGHT) - static_cast<int>(io.MousePos.y);
 	glReadPixels(static_cast<int>(io.MousePos.x), y, 1, 1, GL_RGB, GL_FLOAT, &RGBA);
 
-	return OpenMesh::SmartFaceHandle(
+	return SmartFaceHandle(
 		mesh.GetFaceIndexFromColor((int)(RGBA[0] * 255.f), (int)(RGBA[1] * 255.f), (int)(RGBA[2] * 255.f)),
 		&tessellator->mesh
 	);
@@ -607,7 +614,7 @@ void SurfaceTriangulationDemo::onDisplay()
 	ImGui_ImplGLUT_NewFrame();
 
 	// Update camera
-	instance->camera.Update(ImGui::GetIO().DeltaTime);
+	instance->camera.Update(GetIO().DeltaTime);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -634,7 +641,7 @@ void SurfaceTriangulationDemo::onDisplay()
 
 
 	// ImGUI frame end
-	ImGui::Render();
+	Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	glutSwapBuffers();
